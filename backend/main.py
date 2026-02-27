@@ -1,14 +1,14 @@
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
-import numpy as np
+from tflite_runtime.interpreter import Interpreter
 from PIL import Image
-import tensorflow as tf
+import numpy as np
 import joblib
-import requests
 from cure_dict import cure_dict
 
 app = FastAPI()
 
+# Enable CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -17,67 +17,95 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load Model 1 (.tflite)
-interpreter = tf.lite.Interpreter(model_path="model1/smart_agri_model_quant.tflite")
+# ==========================
+# LOAD MODEL 1 (TFLITE)
+# ==========================
+
+interpreter = Interpreter(model_path="model1/smart_agri_model_quant.tflite")
 interpreter.allocate_tensors()
 
-# Load Model 2 (.pkl)
+input_details = interpreter.get_input_details()
+output_details = interpreter.get_output_details()
+
+# Replace with your real class names
+class_names = [
+    "Healthy",
+    "Tomato Late Blight",
+    "Tomato Early Blight"
+]
+
+# ==========================
+# LOAD MODEL 2 (RISK MODEL)
+# ==========================
+
 risk_model = joblib.load("model2/disease_risk_model.pkl")
 crop_encoder = joblib.load("model2/crop_encoder.pkl")
 disease_encoder = joblib.load("model2/disease_encoder.pkl")
 
-# ---------------------------
-# 1️⃣ IMAGE PREDICTION API
-# ---------------------------
+# ==========================
+# ROOT API
+# ==========================
+
+@app.get("/")
+def home():
+    return {"message": "AI Smart Agriculture API Running"}
+
+# ==========================
+# 1️⃣ DISEASE PREDICTION
+# ==========================
 
 @app.post("/predict_disease/")
 async def predict_disease(file: UploadFile = File(...)):
-    image = Image.open(file.file).resize((224,224))
+
+    image = Image.open(file.file).convert("RGB")
+    image = image.resize((224, 224))
     image = np.array(image) / 255.0
     image = np.expand_dims(image, axis=0).astype(np.float32)
-
-    input_details = interpreter.get_input_details()
-    output_details = interpreter.get_output_details()
 
     interpreter.set_tensor(input_details[0]['index'], image)
     interpreter.invoke()
 
-    prediction = interpreter.get_tensor(output_details[0]['index'])
-    confidence = float(np.max(prediction)) * 100
-    class_index = np.argmax(prediction)
+    prediction = interpreter.get_tensor(output_details[0]['index'])[0]
 
-    # Replace with your actual class list
-    classes = ["Healthy", "Tomato Late Blight"]
-    disease_name = classes[class_index]
+    class_index = np.argmax(prediction)
+    confidence = float(prediction[class_index]) * 100
+    disease_name = class_names[class_index]
 
     cure = cure_dict.get(disease_name, {})
 
     return {
         "disease": disease_name,
-        "confidence": round(confidence,2),
-        "severity": round(confidence,2),
-        "organic_cure": cure.get("organic"),
-        "chemical_cure": cure.get("chemical")
+        "confidence_percentage": round(confidence, 2),
+        "severity_percentage": round(confidence, 2),
+        "organic_cure": cure.get("organic", "No data"),
+        "chemical_cure": cure.get("chemical", "No data")
     }
 
-
+# ==========================
+# 2️⃣ EARLY RISK PREDICTION
+# ==========================
 
 @app.post("/predict_risk/")
-def predict_risk(crop: str, temperature: float, humidity: float, rainfall: float):
+def predict_risk(
+    crop: str = Form(...),
+    temperature: float = Form(...),
+    humidity: float = Form(...),
+    rainfall: float = Form(...)
+):
 
     crop_encoded = crop_encoder.transform([crop])[0]
 
     features = np.array([[temperature, humidity, rainfall, crop_encoded]])
 
-    risk = risk_model.predict_proba(features)[0]
-    risk_percent = round(max(risk)*100,2)
+    probabilities = risk_model.predict_proba(features)[0]
 
-    disease_index = np.argmax(risk)
-    disease_name = disease_encoder.inverse_transform([disease_index])[0]
+    max_index = np.argmax(probabilities)
+    risk_percentage = float(probabilities[max_index]) * 100
+    disease_name = disease_encoder.inverse_transform([max_index])[0]
 
     return {
         "crop": crop,
         "predicted_disease": disease_name,
-        "risk_percentage": risk_percent,
-        "message": f"{crop} – {risk_percent}% risk of {disease_name} in next 5 days"
+        "risk_percentage": round(risk_percentage, 2),
+        "message": f"{crop} has {round(risk_percentage,2)}% risk of {disease_name} in next 5 days."
     }
