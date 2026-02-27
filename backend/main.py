@@ -1,6 +1,6 @@
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
-from tflite_runtime.interpreter import Interpreter
+import tensorflow as tf
 from PIL import Image
 import numpy as np
 import joblib
@@ -20,8 +20,9 @@ app.add_middleware(
 # ==========================
 # LOAD MODEL 1 (TFLITE)
 # ==========================
-
-interpreter = Interpreter(model_path="model1/smart_agri_model_quant.tflite")
+interpreter = tf.lite.Interpreter(
+    model_path="model1/smart_agri_model_quant.tflite"
+)
 interpreter.allocate_tensors()
 
 input_details = interpreter.get_input_details()
