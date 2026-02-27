@@ -1,6 +1,6 @@
 fastapi
 uvicorn
-tensorflow-cpu==2.13.0
+tflite-runtime
 pillow
 numpy
 joblib
