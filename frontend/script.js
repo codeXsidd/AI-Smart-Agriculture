@@ -1,4 +1,4 @@
-const BACKEND_URL = "https://your-backend-name.onrender.com";
+const BACKEND_URL = "https://ai-smart-agriculture.onrender.com";
 
 async function uploadImage() {
     let file = document.getElementById("imageInput").files[0];
@@ -11,7 +11,8 @@ async function uploadImage() {
     });
 
     let data = await response.json();
-    document.getElementById("result").innerHTML = JSON.stringify(data, null, 2);
+    document.getElementById("result").innerHTML =
+        `<pre>${JSON.stringify(data, null, 2)}</pre>`;
 }
 
 async function predictRisk() {
@@ -27,5 +28,6 @@ async function predictRisk() {
     });
 
     let data = await response.json();
-    document.getElementById("result").innerHTML = JSON.stringify(data, null, 2);
+    document.getElementById("result").innerHTML =
+        `<pre>${JSON.stringify(data, null, 2)}</pre>`;
 }
