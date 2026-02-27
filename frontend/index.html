@@ -1,14 +1,26 @@
-<h2>Plant Disease Detection</h2>
-<input type="file" id="imageInput">
-<button onclick="uploadImage()">Predict</button>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Smart Agriculture</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-<h2>Early Risk Prediction</h2>
-<input type="text" id="crop" placeholder="Crop">
+<h1>🌿 AI Smart Agriculture</h1>
+
+<h2>Disease Detection</h2>
+<input type="file" id="imageInput">
+<button onclick="uploadImage()">Predict Disease</button>
+
+<h2>Early Disease Risk</h2>
+<input type="text" id="crop" placeholder="Crop Name">
 <input type="number" id="temp" placeholder="Temperature">
 <input type="number" id="humidity" placeholder="Humidity">
 <input type="number" id="rainfall" placeholder="Rainfall">
-<button onclick="predictRisk()">Check Risk</button>
+<button onclick="predictRisk()">Predict Risk</button>
 
 <div id="result"></div>
 
 <script src="script.js"></script>
+</body>
+</html>
