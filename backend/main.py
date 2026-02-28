@@ -33,7 +33,7 @@ crop_encoder = pickle.load(open("../crop_encoder.pkl", "rb"))
 disease_encoder = pickle.load(open("../disease_encoder.pkl", "rb"))
 
 # Disease Detection TFLite Model
-interpreter = tf.lite.Interpreter(model_path="smart_agri_model_quant.tflite")
+interpreter = tf.lite.Interpreter(model_path="../smart_agri_model_quant.tflite")
 interpreter.allocate_tensors()
 input_details = interpreter.get_input_details()
 output_details = interpreter.get_output_details()
