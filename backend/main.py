@@ -9,6 +9,9 @@ import io
 import os
 from cure_dict import cure_dict
 
+# ==============================
+# Create App
+# ==============================
 app = FastAPI()
 
 app.add_middleware(
@@ -19,37 +22,52 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ===============================
-# SAFE MODEL LOADING
-# ===============================
+# ==============================
+# Get Base Directory
+# ==============================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-risk_model = pickle.load(open(os.path.join(BASE_DIR, "disease_risk_model.pkl"), "rb"))
-crop_encoder = pickle.load(open(os.path.join(BASE_DIR, "crop_encoder.pkl"), "rb"))
-disease_encoder = pickle.load(open(os.path.join(BASE_DIR, "disease_encoder.pkl"), "rb"))
-
-interpreter = tf.lite.Interpreter(
-    model_path=os.path.join(BASE_DIR, "smart_agri_model_quant.tflite")
+# ==============================
+# Load Risk Model (model1 folder)
+# ==============================
+risk_model = pickle.load(
+    open(os.path.join(BASE_DIR, "model1", "disease_risk_model.pkl"), "rb")
 )
-interpreter.allocate_tensors()
 
+crop_encoder = pickle.load(
+    open(os.path.join(BASE_DIR, "model1", "crop_encoder.pkl"), "rb")
+)
+
+disease_encoder = pickle.load(
+    open(os.path.join(BASE_DIR, "model1", "disease_encoder.pkl"), "rb")
+)
+
+# ==============================
+# Load TFLite Disease Model (model2 folder)
+# ==============================
+interpreter = tf.lite.Interpreter(
+    model_path=os.path.join(BASE_DIR, "model2", "smart_agri_model_quant.tflite")
+)
+
+interpreter.allocate_tensors()
 input_details = interpreter.get_input_details()
 output_details = interpreter.get_output_details()
 
-# ===============================
-# ROOT
-# ===============================
+# ==============================
+# Root Route
+# ==============================
 @app.get("/")
 def home():
-    return {"message": "API Running Successfully"}
+    return {"message": "AI Smart Agriculture API Running"}
 
-# ===============================
-# DISEASE DETECTION
-# ===============================
+# ==============================
+# Disease Detection (After Infection)
+# ==============================
 @app.post("/predict_disease/")
 async def predict_disease(file: UploadFile = File(...)):
     try:
         image_bytes = await file.read()
+
         image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
         image = image.resize((224, 224))
 
@@ -84,9 +102,9 @@ async def predict_disease(file: UploadFile = File(...)):
     except Exception as e:
         return {"error": str(e)}
 
-# ===============================
-# RISK PREDICTION (FIXED ORDER)
-# ===============================
+# ==============================
+# Risk Prediction (Before Infection)
+# ==============================
 @app.post("/predict_risk/")
 def predict_risk(
     crop: str = Form(...),
@@ -102,7 +120,7 @@ def predict_risk(
 
         crop_encoded = crop_encoder.transform([crop])[0]
 
-        # ✅ CORRECT ORDER (VERY IMPORTANT)
+        # IMPORTANT: Correct feature order
         features = np.array([[crop_encoded, temperature, humidity, rainfall]])
 
         probabilities = risk_model.predict_proba(features)[0]
@@ -121,6 +139,8 @@ def predict_risk(
     except Exception as e:
         return {"error": str(e)}
 
-# ===============================
+# ==============================
+# Local Run
+# ==============================
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=10000)
