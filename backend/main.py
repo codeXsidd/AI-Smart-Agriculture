@@ -31,22 +31,22 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # Load Risk Model (model1 folder)
 # ==============================
 risk_model = pickle.load(
-    open(os.path.join(BASE_DIR, "model1", "disease_risk_model.pkl"), "rb")
+    open(os.path.join(BASE_DIR, "model2", "disease_risk_model.pkl"), "rb")
 )
 
 crop_encoder = pickle.load(
-    open(os.path.join(BASE_DIR, "model1", "crop_encoder.pkl"), "rb")
+    open(os.path.join(BASE_DIR, "model2", "crop_encoder.pkl"), "rb")
 )
 
 disease_encoder = pickle.load(
-    open(os.path.join(BASE_DIR, "model1", "disease_encoder.pkl"), "rb")
+    open(os.path.join(BASE_DIR, "model2", "disease_encoder.pkl"), "rb")
 )
 
 # ==============================
 # Load TFLite Disease Model (model2 folder)
 # ==============================
 interpreter = tf.lite.Interpreter(
-    model_path=os.path.join(BASE_DIR, "model2", "smart_agri_model_quant.tflite")
+    model_path=os.path.join(BASE_DIR, "model1", "smart_agri_model_quant.tflite")
 )
 
 interpreter.allocate_tensors()
