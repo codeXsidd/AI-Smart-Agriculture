@@ -17,7 +17,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ---------------- LOAD TFLITE MODEL ----------------
+# ---------------- LOAD MODEL 1 ----------------
 interpreter = tf.lite.Interpreter(
     model_path="model1/smart_agri_model_quant.tflite"
 )
@@ -32,7 +32,7 @@ class_names = [
     "Tomato Early Blight"
 ]
 
-# ---------------- LOAD RISK MODEL ----------------
+# ---------------- LOAD MODEL 2 ----------------
 risk_model = joblib.load("model2/disease_risk_model.pkl")
 crop_encoder = joblib.load("model2/crop_encoder.pkl")
 disease_encoder = joblib.load("model2/disease_encoder.pkl")
@@ -45,30 +45,32 @@ def home():
 # ---------------- DISEASE PREDICTION ----------------
 @app.post("/predict_disease/")
 async def predict_disease(file: UploadFile = File(...)):
+    try:
+        image = Image.open(file.file).convert("RGB")
+        image = image.resize((224, 224))
+        image = np.array(image).astype(np.float32) / 255.0
+        image = np.expand_dims(image, axis=0)
 
-    image = Image.open(file.file).convert("RGB")
-    image = image.resize((224, 224))
-    image = np.array(image).astype(np.float32) / 255.0
-    image = np.expand_dims(image, axis=0)
+        interpreter.set_tensor(input_details[0]['index'], image)
+        interpreter.invoke()
+        prediction = interpreter.get_tensor(output_details[0]['index'])[0]
 
-    interpreter.set_tensor(input_details[0]['index'], image)
-    interpreter.invoke()
+        class_index = int(np.argmax(prediction))
+        confidence = float(prediction[class_index]) * 100
+        disease_name = class_names[class_index]
 
-    prediction = interpreter.get_tensor(output_details[0]['index'])[0]
+        cure = cure_dict.get(disease_name, {})
 
-    class_index = int(np.argmax(prediction))
-    confidence = float(prediction[class_index]) * 100
-    disease_name = class_names[class_index]
+        return {
+            "disease": disease_name,
+            "confidence_percentage": round(confidence, 2),
+            "severity_percentage": round(confidence, 2),
+            "organic_cure": cure.get("organic", "No data"),
+            "chemical_cure": cure.get("chemical", "No data")
+        }
 
-    cure = cure_dict.get(disease_name, {})
-
-    return {
-        "disease": disease_name,
-        "confidence_percentage": round(confidence, 2),
-        "severity_percentage": round(confidence, 2),
-        "organic_cure": cure.get("organic", "No data"),
-        "chemical_cure": cure.get("chemical", "No data")
-    }
+    except Exception as e:
+        return {"error": str(e)}
 
 # ---------------- RISK PREDICTION ----------------
 @app.post("/predict_risk/")
@@ -78,20 +80,21 @@ def predict_risk(
     humidity: float = Form(...),
     rainfall: float = Form(...)
 ):
+    try:
+        crop_encoded = crop_encoder.transform([crop])[0]
+        features = np.array([[temperature, humidity, rainfall, crop_encoded]])
+        probabilities = risk_model.predict_proba(features)[0]
 
-    crop_encoded = crop_encoder.transform([crop])[0]
+        max_index = int(np.argmax(probabilities))
+        risk_percentage = float(probabilities[max_index]) * 100
+        disease_name = disease_encoder.inverse_transform([max_index])[0]
 
-    features = np.array([[temperature, humidity, rainfall, crop_encoded]])
+        return {
+            "crop": crop,
+            "predicted_disease": disease_name,
+            "risk_percentage": round(risk_percentage, 2),
+            "message": f"{crop} has {round(risk_percentage,2)}% risk of {disease_name} in next 5 days."
+        }
 
-    probabilities = risk_model.predict_proba(features)[0]
-
-    max_index = int(np.argmax(probabilities))
-    risk_percentage = float(probabilities[max_index]) * 100
-    disease_name = disease_encoder.inverse_transform([max_index])[0]
-
-    return {
-        "crop": crop,
-        "predicted_disease": disease_name,
-        "risk_percentage": round(risk_percentage, 2),
-        "message": f"{crop} has {round(risk_percentage,2)}% risk of {disease_name} in next 5 days."
-    }
+    except Exception as e:
+        return {"error": str(e)}
