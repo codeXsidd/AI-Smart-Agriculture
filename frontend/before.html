@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Before Infection</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="logo">🌿 AgriVision</div>
+  <a href="index.html" class="nav-item">After Infection</a>
+  <a href="before.html" class="nav-item active">Before Infection</a>
+  <a href="history.html" class="nav-item">History</a>
+</div>
+
+<div class="main">
+  <h1>Early Risk Prediction</h1>
+
+  <div class="card">
+    <select id="crop">
+      <option>Tomato</option>
+      <option>Potato</option>
+      <option>Sugarcane</option>
+      <option>Rice</option>
+    </select>
+
+    <br><br>
+
+    <input type="number" id="temp" placeholder="Temperature">
+    <input type="number" id="humidity" placeholder="Humidity">
+    <input type="number" id="rainfall" placeholder="Rainfall">
+
+    <br><br>
+    <button onclick="predictRisk()">Forecast Risk</button>
+
+    <div id="riskResult"></div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
