@@ -23,13 +23,19 @@ async function predictDisease() {
     const data = await response.json();
     console.log("Disease Response:", data);
 
+    // ✅ Proper error handling
+    if (data.error) {
+      alert("Model Error: " + data.error);
+      return;
+    }
+
     if (!data.disease) {
-      alert("Model Error");
+      alert("Unexpected response from server");
       return;
     }
 
     document.getElementById("diseaseResult").innerHTML = `
-      <div class="result-card low">
+      <div class="result-card ${data.severity_percentage > 60 ? "high" : "low"}">
         <div class="progress-circle">${data.severity_percentage}%</div>
         <div>
           <h2>${data.disease}</h2>
@@ -40,10 +46,11 @@ async function predictDisease() {
     `;
 
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Disease Error:", error);
     alert("Server Error");
   }
 }
+
 
 /* ===============================
    BEFORE INFECTION (Risk)
@@ -75,16 +82,14 @@ async function predictRisk() {
     const data = await response.json();
     console.log("Risk Response:", data);
 
-    // If backend returns error message
-    if (data.message && !data.risk_percentage) {
-      document.getElementById("riskResult").innerHTML = `
-        <div class="result-card high">
-          <div>
-            <h2>Error</h2>
-            <p>${data.message}</p>
-          </div>
-        </div>
-      `;
+    // ✅ Proper error handling
+    if (data.error) {
+      alert("Model Error: " + data.error);
+      return;
+    }
+
+    if (!data.risk_percentage) {
+      alert("Unexpected response from server");
       return;
     }
 
@@ -99,7 +104,7 @@ async function predictRisk() {
     `;
 
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Risk Error:", error);
     alert("Server Error");
   }
 }
