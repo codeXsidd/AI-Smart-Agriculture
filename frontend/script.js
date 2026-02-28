@@ -9,56 +9,38 @@ async function uploadImage() {
         return;
     }
 
-    resultBox.innerHTML = "Processing...";
+    resultBox.innerHTML = "Starting server... Please wait...";
 
     let formData = new FormData();
     formData.append("file", fileInput.files[0]);
 
-    try {
-        let response = await fetch(`${BACKEND_URL}/predict_disease/`, {
-            method: "POST",
-            body: formData
-        });
+    let attempts = 0;
 
-        let data = await response.json();
+    while (attempts < 5) {
+        try {
+            let response = await fetch(`${BACKEND_URL}/predict_disease/`, {
+                method: "POST",
+                body: formData
+            });
 
-        resultBox.innerHTML = `
-            <h3>${data.disease}</h3>
-            <p>Confidence: ${data.confidence_percentage}%</p>
-            <p>Severity: ${data.severity_percentage}%</p>
-            <p><strong>Organic:</strong> ${data.organic_cure}</p>
-            <p><strong>Chemical:</strong> ${data.chemical_cure}</p>
-        `;
-    } catch (error) {
-        resultBox.innerHTML = "Server sleeping... Wait 30 sec and retry.";
+            if (!response.ok) throw new Error();
+
+            let data = await response.json();
+
+            resultBox.innerHTML = `
+                <h3>${data.disease}</h3>
+                <p>Confidence: ${data.confidence_percentage}%</p>
+                <p>Severity: ${data.severity_percentage}%</p>
+                <p><strong>Organic:</strong> ${data.organic_cure}</p>
+                <p><strong>Chemical:</strong> ${data.chemical_cure}</p>
+            `;
+            return;
+        } catch (error) {
+            attempts++;
+            resultBox.innerHTML = "Server waking up... Please wait...";
+            await new Promise(r => setTimeout(r, 10000));
+        }
     }
-}
 
-async function predictRisk() {
-    const resultBox = document.getElementById("riskResult");
-
-    resultBox.innerHTML = "Processing...";
-
-    let formData = new FormData();
-    formData.append("crop", document.getElementById("crop").value);
-    formData.append("temperature", document.getElementById("temp").value);
-    formData.append("humidity", document.getElementById("humidity").value);
-    formData.append("rainfall", document.getElementById("rainfall").value);
-
-    try {
-        let response = await fetch(`${BACKEND_URL}/predict_risk/`, {
-            method: "POST",
-            body: formData
-        });
-
-        let data = await response.json();
-
-        resultBox.innerHTML = `
-            <h3>${data.predicted_disease}</h3>
-            <p>Risk: ${data.risk_percentage}%</p>
-            <p>${data.message}</p>
-        `;
-    } catch (error) {
-        resultBox.innerHTML = "Server sleeping... Wait 30 sec and retry.";
-    }
+    resultBox.innerHTML = "Server still unavailable. Try again later.";
 }
