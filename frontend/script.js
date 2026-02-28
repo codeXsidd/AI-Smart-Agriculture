@@ -1,18 +1,18 @@
 const BACKEND_URL = "https://ai-smart-agriculture.onrender.com";
 
 async function uploadImage() {
-    const resultBox = document.getElementById("diseaseResult");
-    const fileInput = document.getElementById("imageInput");
+    let resultBox = document.getElementById("diseaseResult");
+    let file = document.getElementById("imageInput").files[0];
 
-    if (!fileInput.files.length) {
-        alert("Please select an image");
+    if (!file) {
+        alert("Select image");
         return;
     }
 
-    resultBox.innerHTML = "⏳ Processing... Please wait";
+    resultBox.innerHTML = "Processing...";
 
     let formData = new FormData();
-    formData.append("file", fileInput.files[0]);
+    formData.append("file", file);
 
     try {
         let response = await fetch(`${BACKEND_URL}/predict_disease/`, {
@@ -20,46 +20,33 @@ async function uploadImage() {
             body: formData
         });
 
-        if (!response.ok) {
-            throw new Error("Server Error");
-        }
-
         let data = await response.json();
 
         resultBox.innerHTML = `
-            <h3>Prediction Result</h3>
-            <p><strong>Disease:</strong> ${data.disease}</p>
-            <p><strong>Severity:</strong> ${data.severity_percentage}%</p>
-            <p><strong>Confidence:</strong> ${data.confidence_percentage}%</p>
-            <p><strong>Organic Cure:</strong> ${data.organic_cure}</p>
-            <p><strong>Chemical Cure:</strong> ${data.chemical_cure}</p>
+            <p><b>Disease:</b> ${data.disease}</p>
+            <p><b>Confidence:</b> ${data.confidence_percentage}%</p>
+            <p><b>Severity:</b> ${data.severity_percentage}%</p>
+            <p><b>Organic Cure:</b> ${data.organic_cure}</p>
+            <p><b>Chemical Cure:</b> ${data.chemical_cure}</p>
+            <p><b>AI Explanation:</b> ${data.ai_explanation}</p>
+            <p><b>Yield Prediction:</b> ${data.yield_prediction}</p>
         `;
 
     } catch (error) {
-        resultBox.innerHTML = "❌ Server is waking up. Please try again in 30 seconds.";
+        resultBox.innerHTML = "Server sleeping. Wait 30 seconds and try again.";
     }
 }
 
 async function predictRisk() {
-    const resultBox = document.getElementById("riskResult");
-
-    let crop = document.getElementById("crop").value;
-    let temp = document.getElementById("temp").value;
-    let humidity = document.getElementById("humidity").value;
-    let rainfall = document.getElementById("rainfall").value;
-
-    if (!temp || !humidity || !rainfall) {
-        alert("Fill all fields");
-        return;
-    }
-
-    resultBox.innerHTML = "⏳ Calculating Risk...";
+    let resultBox = document.getElementById("riskResult");
 
     let formData = new FormData();
-    formData.append("crop", crop);
-    formData.append("temperature", temp);
-    formData.append("humidity", humidity);
-    formData.append("rainfall", rainfall);
+    formData.append("crop", document.getElementById("crop").value);
+    formData.append("temperature", document.getElementById("temp").value);
+    formData.append("humidity", document.getElementById("humidity").value);
+    formData.append("rainfall", document.getElementById("rainfall").value);
+
+    resultBox.innerHTML = "Processing...";
 
     try {
         let response = await fetch(`${BACKEND_URL}/predict_risk/`, {
@@ -67,21 +54,16 @@ async function predictRisk() {
             body: formData
         });
 
-        if (!response.ok) {
-            throw new Error("Server Error");
-        }
-
         let data = await response.json();
 
         resultBox.innerHTML = `
-            <h3>Risk Analysis</h3>
-            <p><strong>Crop:</strong> ${data.crop}</p>
-            <p><strong>Disease:</strong> ${data.predicted_disease}</p>
-            <p><strong>Risk Percentage:</strong> ${data.risk_percentage}%</p>
+            <p><b>Crop:</b> ${data.crop}</p>
+            <p><b>Disease:</b> ${data.predicted_disease}</p>
+            <p><b>Risk:</b> ${data.risk_percentage}%</p>
             <p>${data.message}</p>
         `;
 
     } catch (error) {
-        resultBox.innerHTML = "❌ Server is waking up. Please retry.";
+        resultBox.innerHTML = "Server sleeping. Wait 30 seconds and try again.";
     }
 }
