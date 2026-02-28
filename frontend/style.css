@@ -1,59 +1,57 @@
 body {
-    font-family: Arial;
-    background: #f5f7fa;
     margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(to right, #dfe9f3, #ffffff);
 }
 
-nav {
-    background: #2e7d32;
+header {
+    text-align: center;
+    padding: 20px;
+    background: #27ae60;
     color: white;
-    padding: 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
 }
 
-nav button {
-    background: white;
-    color: #2e7d32;
-    border: none;
-    padding: 8px 12px;
-    margin-left: 10px;
-    cursor: pointer;
-}
-
-.page {
-    padding: 30px;
-}
-
-.hidden {
-    display: none;
+.container {
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 10px;
 }
 
 .card {
-    max-width: 600px;
-    margin: auto;
     background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    padding: 25px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
 }
 
-input, button {
+select, input {
     width: 100%;
-    padding: 10px;
+    padding: 12px;
     margin-top: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
 }
 
 button {
-    background: #2e7d32;
-    color: white;
+    margin-top: 15px;
+    padding: 12px;
+    width: 100%;
+    border-radius: 8px;
     border: none;
+    background: #27ae60;
+    color: white;
+    font-weight: bold;
     cursor: pointer;
+}
+
+button:hover {
+    background: #219150;
 }
 
 .result-box {
     margin-top: 15px;
-    padding: 10px;
-    background: #e8f5e9;
+    padding: 15px;
+    border-radius: 8px;
+    background: #f0f9f4;
 }
