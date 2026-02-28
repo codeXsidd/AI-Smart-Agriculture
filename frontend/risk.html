@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Early Disease Risk</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav>
+    <h2>🌿 AI Smart Agriculture 2.0</h2>
+    <div>
+        <a href="index.html">Disease Detection</a>
+        <a href="risk.html">Early Risk</a>
+    </div>
+</nav>
+
+<div class="container">
+
+    <div class="card">
+        <h2>Early Disease Risk Prediction</h2>
+
+        <input type="text" id="crop" placeholder="Crop Name">
+        <input type="number" id="temp" placeholder="Temperature">
+        <input type="number" id="humidity" placeholder="Humidity">
+        <input type="number" id="rainfall" placeholder="Rainfall">
+
+        <button onclick="predictRisk()">Predict Risk</button>
+
+        <div id="riskResult" class="result-box"></div>
+    </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
