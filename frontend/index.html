@@ -1,38 +1,67 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>AI Smart Agriculture 2.0</title>
+    <title>AI Smart Agriculture</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<nav>
-    <h2>🌿 AI Smart Agriculture 2.0</h2>
-    <div>
-        <button onclick="showPage('disease')">Disease Detection</button>
-        <button onclick="showPage('risk')">Risk Prediction</button>
-    </div>
-</nav>
+<header>
+    <h1>🌿 AI Smart Agriculture</h1>
+    <p>Smart Disease Detection & Early Risk Prediction System</p>
+</header>
 
-<div class="page" id="diseasePage">
+<div class="container">
+
+    <!-- SECTION 1 -->
     <div class="card">
-        <h2>Plant Disease Detection</h2>
+        <h2>After Infection – Disease Detection</h2>
+
+        <select id="plantSelect">
+            <option value="Tomato">Tomato</option>
+            <option value="Potato">Potato</option>
+            <option value="Corn">Corn</option>
+            <option value="Apple">Apple</option>
+            <option value="Grape">Grape</option>
+            <option value="Pepper">Pepper</option>
+            <option value="Strawberry">Strawberry</option>
+            <option value="Carrot">Carrot</option>
+            <option value="Cabbage">Cabbage</option>
+            <option value="Onion">Onion</option>
+            <option value="Wheat">Wheat</option>
+            <option value="Rice">Rice</option>
+            <option value="Soybean">Soybean</option>
+            <option value="Banana">Banana</option>
+            <option value="Mango">Mango</option>
+        </select>
+
         <input type="file" id="imageInput">
         <button onclick="uploadImage()">Predict Disease</button>
+
         <div id="diseaseResult" class="result-box"></div>
     </div>
-</div>
 
-<div class="page hidden" id="riskPage">
+    <!-- SECTION 2 -->
     <div class="card">
-        <h2>Early Disease Risk Prediction</h2>
-        <input type="text" id="crop" placeholder="Crop Name">
-        <input type="number" id="temp" placeholder="Temperature">
-        <input type="number" id="humidity" placeholder="Humidity">
-        <input type="number" id="rainfall" placeholder="Rainfall">
+        <h2>Before Infection – Early Risk Prediction</h2>
+
+        <select id="crop">
+            <option value="Tomato">Tomato</option>
+            <option value="Potato">Potato</option>
+            <option value="Corn">Corn</option>
+            <option value="Rice">Rice</option>
+            <option value="Wheat">Wheat</option>
+        </select>
+
+        <input type="number" id="temp" placeholder="Temperature (°C)">
+        <input type="number" id="humidity" placeholder="Humidity (%)">
+        <input type="number" id="rainfall" placeholder="Rainfall (mm)">
+
         <button onclick="predictRisk()">Predict Risk</button>
+
         <div id="riskResult" class="result-box"></div>
     </div>
+
 </div>
 
 <script src="script.js"></script>
