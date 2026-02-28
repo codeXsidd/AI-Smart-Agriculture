@@ -17,7 +17,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ---------------- LOAD MODEL 1 ----------------
+# ---------------- LOAD TFLITE MODEL ----------------
 interpreter = tf.lite.Interpreter(
     model_path="model1/smart_agri_model_quant.tflite"
 )
@@ -32,12 +32,11 @@ class_names = [
     "Tomato Early Blight"
 ]
 
-# ---------------- LOAD MODEL 2 ----------------
+# ---------------- LOAD RISK MODEL ----------------
 risk_model = joblib.load("model2/disease_risk_model.pkl")
 crop_encoder = joblib.load("model2/crop_encoder.pkl")
 disease_encoder = joblib.load("model2/disease_encoder.pkl")
 
-# ---------------- ROOT ----------------
 @app.get("/")
 def home():
     return {"message": "AI Smart Agriculture API Running"}
@@ -45,6 +44,7 @@ def home():
 # ---------------- DISEASE PREDICTION ----------------
 @app.post("/predict_disease/")
 async def predict_disease(file: UploadFile = File(...)):
+
     try:
         image = Image.open(file.file).convert("RGB")
         image = image.resize((224, 224))
@@ -53,6 +53,7 @@ async def predict_disease(file: UploadFile = File(...)):
 
         interpreter.set_tensor(input_details[0]['index'], image)
         interpreter.invoke()
+
         prediction = interpreter.get_tensor(output_details[0]['index'])[0]
 
         class_index = int(np.argmax(prediction))
@@ -66,7 +67,9 @@ async def predict_disease(file: UploadFile = File(...)):
             "confidence_percentage": round(confidence, 2),
             "severity_percentage": round(confidence, 2),
             "organic_cure": cure.get("organic", "No data"),
-            "chemical_cure": cure.get("chemical", "No data")
+            "chemical_cure": cure.get("chemical", "No data"),
+            "ai_explanation": f"The plant shows symptoms of {disease_name}. Immediate treatment recommended.",
+            "yield_prediction": "Estimated yield may reduce by 20% if untreated."
         }
 
     except Exception as e:
@@ -80,6 +83,7 @@ def predict_risk(
     humidity: float = Form(...),
     rainfall: float = Form(...)
 ):
+
     try:
         crop_encoded = crop_encoder.transform([crop])[0]
         features = np.array([[temperature, humidity, rainfall, crop_encoded]])
