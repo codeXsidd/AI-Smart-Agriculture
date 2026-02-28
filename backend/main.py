@@ -8,7 +8,7 @@ from cure_dict import cure_dict
 
 app = FastAPI()
 
-# Enable CORS
+# ---------------- CORS ----------------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -17,9 +17,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ==========================
-# LOAD MODEL 1 (TFLITE)
-# ==========================
+# ---------------- LOAD TFLITE MODEL ----------------
 interpreter = tf.lite.Interpreter(
     model_path="model1/smart_agri_model_quant.tflite"
 )
@@ -28,47 +26,37 @@ interpreter.allocate_tensors()
 input_details = interpreter.get_input_details()
 output_details = interpreter.get_output_details()
 
-# Replace with your real class names
 class_names = [
     "Healthy",
     "Tomato Late Blight",
     "Tomato Early Blight"
 ]
 
-# ==========================
-# LOAD MODEL 2 (RISK MODEL)
-# ==========================
-
+# ---------------- LOAD RISK MODEL ----------------
 risk_model = joblib.load("model2/disease_risk_model.pkl")
 crop_encoder = joblib.load("model2/crop_encoder.pkl")
 disease_encoder = joblib.load("model2/disease_encoder.pkl")
 
-# ==========================
-# ROOT API
-# ==========================
-
+# ---------------- ROOT ----------------
 @app.get("/")
 def home():
     return {"message": "AI Smart Agriculture API Running"}
 
-# ==========================
-# 1️⃣ DISEASE PREDICTION
-# ==========================
-
+# ---------------- DISEASE PREDICTION ----------------
 @app.post("/predict_disease/")
 async def predict_disease(file: UploadFile = File(...)):
 
     image = Image.open(file.file).convert("RGB")
     image = image.resize((224, 224))
-    image = np.array(image) / 255.0
-    image = np.expand_dims(image, axis=0).astype(np.float32)
+    image = np.array(image).astype(np.float32) / 255.0
+    image = np.expand_dims(image, axis=0)
 
     interpreter.set_tensor(input_details[0]['index'], image)
     interpreter.invoke()
 
     prediction = interpreter.get_tensor(output_details[0]['index'])[0]
 
-    class_index = np.argmax(prediction)
+    class_index = int(np.argmax(prediction))
     confidence = float(prediction[class_index]) * 100
     disease_name = class_names[class_index]
 
@@ -82,10 +70,7 @@ async def predict_disease(file: UploadFile = File(...)):
         "chemical_cure": cure.get("chemical", "No data")
     }
 
-# ==========================
-# 2️⃣ EARLY RISK PREDICTION
-# ==========================
-
+# ---------------- RISK PREDICTION ----------------
 @app.post("/predict_risk/")
 def predict_risk(
     crop: str = Form(...),
@@ -100,7 +85,7 @@ def predict_risk(
 
     probabilities = risk_model.predict_proba(features)[0]
 
-    max_index = np.argmax(probabilities)
+    max_index = int(np.argmax(probabilities))
     risk_percentage = float(probabilities[max_index]) * 100
     disease_name = disease_encoder.inverse_transform([max_index])[0]
 
