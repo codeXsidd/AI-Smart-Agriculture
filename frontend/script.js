@@ -1,26 +1,15 @@
 const BACKEND_URL = "https://ai-smart-agriculture.onrender.com";
 
-function showPage(page) {
-    document.getElementById("diseasePage").classList.add("hidden");
-    document.getElementById("riskPage").classList.add("hidden");
-
-    if (page === "disease") {
-        document.getElementById("diseasePage").classList.remove("hidden");
-    } else {
-        document.getElementById("riskPage").classList.remove("hidden");
-    }
-}
-
 async function uploadImage() {
-    let fileInput = document.getElementById("imageInput");
-    let resultBox = document.getElementById("diseaseResult");
+    const resultBox = document.getElementById("diseaseResult");
+    const fileInput = document.getElementById("imageInput");
 
-    if (!fileInput.files[0]) {
-        alert("Please select an image.");
+    if (!fileInput.files.length) {
+        alert("Please select an image");
         return;
     }
 
-    resultBox.innerHTML = "🔄 Processing...";
+    resultBox.innerHTML = "⏳ Processing... Please wait";
 
     let formData = new FormData();
     formData.append("file", fileInput.files[0]);
@@ -31,35 +20,46 @@ async function uploadImage() {
             body: formData
         });
 
-        let data = await response.json();
-
-        if (data.error) {
-            resultBox.innerHTML = "❌ " + data.error;
-            return;
+        if (!response.ok) {
+            throw new Error("Server Error");
         }
 
+        let data = await response.json();
+
         resultBox.innerHTML = `
-            <h3>${data.disease}</h3>
-            <p>Confidence: ${data.confidence_percentage}%</p>
-            <p>Severity: ${data.severity_percentage}%</p>
-            <p><b>Organic Cure:</b> ${data.organic_cure}</p>
-            <p><b>Chemical Cure:</b> ${data.chemical_cure}</p>
+            <h3>Prediction Result</h3>
+            <p><strong>Disease:</strong> ${data.disease}</p>
+            <p><strong>Severity:</strong> ${data.severity_percentage}%</p>
+            <p><strong>Confidence:</strong> ${data.confidence_percentage}%</p>
+            <p><strong>Organic Cure:</strong> ${data.organic_cure}</p>
+            <p><strong>Chemical Cure:</strong> ${data.chemical_cure}</p>
         `;
+
     } catch (error) {
-        resultBox.innerHTML = "❌ Server sleeping... wait 30 seconds and retry.";
+        resultBox.innerHTML = "❌ Server is waking up. Please try again in 30 seconds.";
     }
 }
 
 async function predictRisk() {
-    let resultBox = document.getElementById("riskResult");
+    const resultBox = document.getElementById("riskResult");
+
+    let crop = document.getElementById("crop").value;
+    let temp = document.getElementById("temp").value;
+    let humidity = document.getElementById("humidity").value;
+    let rainfall = document.getElementById("rainfall").value;
+
+    if (!temp || !humidity || !rainfall) {
+        alert("Fill all fields");
+        return;
+    }
+
+    resultBox.innerHTML = "⏳ Calculating Risk...";
 
     let formData = new FormData();
-    formData.append("crop", document.getElementById("crop").value);
-    formData.append("temperature", document.getElementById("temp").value);
-    formData.append("humidity", document.getElementById("humidity").value);
-    formData.append("rainfall", document.getElementById("rainfall").value);
-
-    resultBox.innerHTML = "🔄 Processing...";
+    formData.append("crop", crop);
+    formData.append("temperature", temp);
+    formData.append("humidity", humidity);
+    formData.append("rainfall", rainfall);
 
     try {
         let response = await fetch(`${BACKEND_URL}/predict_risk/`, {
@@ -67,19 +67,21 @@ async function predictRisk() {
             body: formData
         });
 
-        let data = await response.json();
-
-        if (data.error) {
-            resultBox.innerHTML = "❌ " + data.error;
-            return;
+        if (!response.ok) {
+            throw new Error("Server Error");
         }
 
+        let data = await response.json();
+
         resultBox.innerHTML = `
-            <h3>${data.predicted_disease}</h3>
-            <p>Risk: ${data.risk_percentage}%</p>
+            <h3>Risk Analysis</h3>
+            <p><strong>Crop:</strong> ${data.crop}</p>
+            <p><strong>Disease:</strong> ${data.predicted_disease}</p>
+            <p><strong>Risk Percentage:</strong> ${data.risk_percentage}%</p>
             <p>${data.message}</p>
         `;
+
     } catch (error) {
-        resultBox.innerHTML = "❌ Server sleeping... wait 30 seconds and retry.";
+        resultBox.innerHTML = "❌ Server is waking up. Please retry.";
     }
 }
