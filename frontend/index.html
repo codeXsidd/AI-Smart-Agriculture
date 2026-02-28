@@ -6,20 +6,30 @@
 </head>
 <body>
 
-<h1>🌿 AI Smart Agriculture</h1>
+<div class="container">
 
-<h2>Disease Detection</h2>
-<input type="file" id="imageInput">
-<button onclick="uploadImage()">Predict Disease</button>
+    <h1>🌿 AI Smart Agriculture</h1>
 
-<h2>Early Disease Risk</h2>
-<input type="text" id="crop" placeholder="Crop Name">
-<input type="number" id="temp" placeholder="Temperature">
-<input type="number" id="humidity" placeholder="Humidity">
-<input type="number" id="rainfall" placeholder="Rainfall">
-<button onclick="predictRisk()">Predict Risk</button>
+    <!-- SECTION 1 -->
+    <div class="card">
+        <h2>Disease Detection</h2>
+        <input type="file" id="imageInput">
+        <button onclick="uploadImage()">Predict Disease</button>
+        <div id="diseaseResult" class="result-box"></div>
+    </div>
 
-<div id="result"></div>
+    <!-- SECTION 2 -->
+    <div class="card">
+        <h2>Early Disease Risk</h2>
+        <input type="text" id="crop" placeholder="Crop Name">
+        <input type="number" id="temp" placeholder="Temperature">
+        <input type="number" id="humidity" placeholder="Humidity">
+        <input type="number" id="rainfall" placeholder="Rainfall">
+        <button onclick="predictRisk()">Predict Risk</button>
+        <div id="riskResult" class="result-box"></div>
+    </div>
+
+</div>
 
 <script src="script.js"></script>
 </body>
