@@ -28,9 +28,9 @@ app.add_middleware(
 # 3️⃣ Load ML Models
 # -------------------------------
 # Risk Model
-risk_model = pickle.load(open("disease_risk_model.pkl", "rb"))
-crop_encoder = pickle.load(open("crop_encoder.pkl", "rb"))
-disease_encoder = pickle.load(open("disease_encoder.pkl", "rb"))
+risk_model = pickle.load(open("../disease_risk_model.pkl", "rb"))
+crop_encoder = pickle.load(open("../crop_encoder.pkl", "rb"))
+disease_encoder = pickle.load(open("../disease_encoder.pkl", "rb"))
 
 # Disease Detection TFLite Model
 interpreter = tf.lite.Interpreter(model_path="smart_agri_model_quant.tflite")
