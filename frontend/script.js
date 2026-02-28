@@ -1,42 +1,38 @@
 const API = "https://ai-smart-agriculture.onrender.com";
 
-function createResultCard(percent, title, message, isHigh=false) {
-  const colorClass = isHigh ? "high" : "low";
-
-  return `
-    <div class="result-card ${colorClass}">
-      <div class="progress-circle" id="circle">
-        ${percent}%
-      </div>
-      <div>
-        <h2>${title}</h2>
-        <p>${message}</p>
-      </div>
-    </div>
-  `;
-}
-
 async function predictDisease() {
   const file = document.getElementById("imageInput").files[0];
-  if (!file) return alert("Upload image");
+  if (!file) {
+    alert("Upload image first");
+    return;
+  }
 
   const formData = new FormData();
   formData.append("file", file);
 
-  const response = await fetch(`${API}/predict_disease`, {
-    method: "POST",
-    body: formData
-  });
+  try {
+    const response = await fetch(`${API}/predict_disease/`, {
+      method: "POST",
+      body: formData
+    });
 
-  const data = await response.json();
+    const data = await response.json();
+    console.log("Disease Response:", data);
 
-  document.getElementById("diseaseResult").innerHTML =
-    createResultCard(
-      data.severity_percentage,
-      data.disease,
-      data.ai_explanation,
-      data.severity_percentage > 60
-    );
+    document.getElementById("diseaseResult").innerHTML = `
+      <div class="result-card low">
+        <div class="progress-circle">${data.severity_percentage}%</div>
+        <div>
+          <h2>${data.disease}</h2>
+          <p><b>Confidence:</b> ${data.confidence_percentage}%</p>
+          <p>${data.ai_explanation}</p>
+        </div>
+      </div>
+    `;
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Server Error");
+  }
 }
 
 async function predictRisk() {
@@ -46,18 +42,26 @@ async function predictRisk() {
   formData.append("humidity", document.getElementById("humidity").value);
   formData.append("rainfall", document.getElementById("rainfall").value);
 
-  const response = await fetch(`${API}/predict_risk`, {
-    method: "POST",
-    body: formData
-  });
+  try {
+    const response = await fetch(`${API}/predict_risk/`, {
+      method: "POST",
+      body: formData
+    });
 
-  const data = await response.json();
+    const data = await response.json();
+    console.log("Risk Response:", data);
 
-  document.getElementById("riskResult").innerHTML =
-    createResultCard(
-      data.risk_percentage,
-      data.predicted_disease,
-      data.message,
-      data.risk_percentage > 60
-    );
+    document.getElementById("riskResult").innerHTML = `
+      <div class="result-card ${data.risk_percentage > 60 ? "high" : "low"}">
+        <div class="progress-circle">${data.risk_percentage}%</div>
+        <div>
+          <h2>${data.predicted_disease}</h2>
+          <p>${data.message}</p>
+        </div>
+      </div>
+    `;
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Server Error");
+  }
 }
