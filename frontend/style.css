@@ -2,220 +2,124 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Segoe UI", sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 body {
   display: flex;
-  background: #f4f7f5;
+  background: #f5f7f6;
 }
 
 /* Sidebar */
 .sidebar {
-  width: 230px;
+  width: 240px;
   height: 100vh;
   background: white;
-  padding: 20px;
-  border-right: 1px solid #e0e0e0;
+  padding: 30px 20px;
+  border-right: 1px solid #e5e5e5;
 }
 
 .logo {
   font-size: 22px;
   font-weight: bold;
-  color: #1e7f4f;
-  margin-bottom: 30px;
+  color: #1f7a4c;
+  margin-bottom: 40px;
 }
 
 .nav-item {
   display: block;
-  padding: 12px;
-  border-radius: 8px;
+  padding: 14px;
+  border-radius: 10px;
   text-decoration: none;
-  color: #333;
+  color: #444;
   margin-bottom: 10px;
-  transition: 0.3s;
+  transition: 0.3s ease;
 }
 
-.nav-item:hover,
+.nav-item:hover {
+  background: #eaf6ef;
+}
+
 .active {
-  background: #e6f4ec;
-  color: #1e7f4f;
-  font-weight: bold;
+  background: #eaf6ef;
+  color: #1f7a4c;
+  font-weight: 600;
 }
 
-/* Main content */
+/* Main */
 .main {
   flex: 1;
   padding: 40px;
 }
 
 h1 {
-  margin-bottom: 20px;
-  font-size: 28px;
-}
-
-/* Card */
-.card {
-  background: white;
-  padding: 25px;
-  border-radius: 12px;
-  box-shadow: 0px 4px 15px rgba(0,0,0,0.05);
-  margin-bottom: 25px;
-}
-
-/* Upload box */
-.upload-box {
-  border: 2px dashed #c8e6d4;
-  padding: 40px;
-  text-align: center;
-  border-radius: 12px;
-  cursor: pointer;
-  margin-bottom: 20px;
-}
-
-button {
-  background: #1e7f4f;
-  color: white;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-button:hover {
-  background: #16663d;
-}
-
-/* Result card */
-.result-card {
-  background: linear-gradient(135deg, #1e7f4f, #27ae60);
-  color: white;
-  padding: 25px;
-  border-radius: 12px;
-  margin-top: 20px;
-}
-
-/* Circular Risk */
-.circle {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  border: 12px solid rgba(255,255,255,0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  font-weight: bold;
-  margin-bottom: 15px;
-}* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Segoe UI", sans-serif;
-}
-
-body {
-  display: flex;
-  background: #f4f7f5;
-}
-
-/* Sidebar */
-.sidebar {
-  width: 230px;
-  height: 100vh;
-  background: white;
-  padding: 20px;
-  border-right: 1px solid #e0e0e0;
-}
-
-.logo {
-  font-size: 22px;
-  font-weight: bold;
-  color: #1e7f4f;
+  font-size: 32px;
   margin-bottom: 30px;
 }
 
-.nav-item {
-  display: block;
-  padding: 12px;
-  border-radius: 8px;
-  text-decoration: none;
-  color: #333;
-  margin-bottom: 10px;
-  transition: 0.3s;
-}
-
-.nav-item:hover,
-.active {
-  background: #e6f4ec;
-  color: #1e7f4f;
-  font-weight: bold;
-}
-
-/* Main content */
-.main {
-  flex: 1;
-  padding: 40px;
-}
-
-h1 {
-  margin-bottom: 20px;
-  font-size: 28px;
-}
-
 /* Card */
 .card {
   background: white;
-  padding: 25px;
-  border-radius: 12px;
-  box-shadow: 0px 4px 15px rgba(0,0,0,0.05);
-  margin-bottom: 25px;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0px 10px 30px rgba(0,0,0,0.05);
+  margin-bottom: 30px;
 }
 
-/* Upload box */
+/* Upload */
 .upload-box {
-  border: 2px dashed #c8e6d4;
-  padding: 40px;
+  border: 2px dashed #cde8d8;
+  padding: 50px;
   text-align: center;
-  border-radius: 12px;
+  border-radius: 16px;
   cursor: pointer;
   margin-bottom: 20px;
 }
 
+/* Button */
 button {
-  background: #1e7f4f;
+  background: #1f7a4c;
   color: white;
   border: none;
-  padding: 12px 20px;
-  border-radius: 8px;
+  padding: 14px 22px;
+  border-radius: 10px;
   cursor: pointer;
-  font-weight: bold;
+  font-weight: 600;
+  transition: 0.3s;
 }
 
 button:hover {
-  background: #16663d;
+  background: #17633d;
 }
 
-/* Result card */
+/* Result Card */
 .result-card {
-  background: linear-gradient(135deg, #1e7f4f, #27ae60);
+  margin-top: 30px;
+  padding: 30px;
+  border-radius: 20px;
   color: white;
-  padding: 25px;
-  border-radius: 12px;
-  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-/* Circular Risk */
-.circle {
-  width: 120px;
-  height: 120px;
+.low {
+  background: linear-gradient(135deg, #1f7a4c, #2ecc71);
+}
+
+.high {
+  background: linear-gradient(135deg, #d63031, #ff7675);
+}
+
+/* Circular Progress */
+.progress-circle {
+  width: 140px;
+  height: 140px;
   border-radius: 50%;
-  border: 12px solid rgba(255,255,255,0.3);
+  background: conic-gradient(#ffffff 0%, rgba(255,255,255,0.2) 0%);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
+  font-size: 26px;
   font-weight: bold;
-  margin-bottom: 15px;
 }
