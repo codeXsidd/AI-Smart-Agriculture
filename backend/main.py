@@ -6,9 +6,9 @@ import numpy as np
 import joblib
 from cure_dict import cure_dict
 
-app = FastAPI()
 
-# ---------------- CORS ----------------
+from fastapi.middleware.cors import CORSMiddleware
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
