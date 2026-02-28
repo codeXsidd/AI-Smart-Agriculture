@@ -1,14 +1,14 @@
 cure_dict = {
-    "Healthy": {
-        "organic": "No treatment required.",
-        "chemical": "No chemical treatment required."
+    "Septoria Leaf Spot": {
+        "organic": "Apply neem oil spray weekly.",
+        "chemical": "Use chlorothalonil fungicide."
     },
-    "Tomato Late Blight": {
-        "organic": "Spray neem oil every 7 days.",
-        "chemical": "Apply Mancozeb fungicide."
+    "Bacterial Wilt": {
+        "organic": "Improve soil drainage and rotate crops.",
+        "chemical": "Use copper-based bactericide."
     },
-    "Tomato Early Blight": {
-        "organic": "Use compost tea spray.",
-        "chemical": "Apply Chlorothalonil fungicide."
+    "Red Rot": {
+        "organic": "Remove infected plants immediately.",
+        "chemical": "Apply recommended fungicide treatment."
     }
 }
