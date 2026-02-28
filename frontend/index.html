@@ -1,45 +1,42 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Disease Detection</title>
-    <link rel="stylesheet" href="style.css">
+  <title>After Infection</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<nav>
-    <a href="index.html">After Infection</a>
-    <a href="risk.html">Before Infection</a>
-</nav>
+<div class="sidebar">
+  <div class="logo">🌿 AgriVision</div>
+  <a href="index.html" class="nav-item active">After Infection</a>
+  <a href="before.html" class="nav-item">Before Infection</a>
+  <a href="history.html" class="nav-item">History</a>
+</div>
 
-<div class="container">
-    <h1>🌿 AI Smart Agriculture</h1>
+<div class="main">
+  <h1>Disease Diagnosis</h1>
 
-    <div class="card">
-        <h2>Disease Detection</h2>
-
-        <select id="plantSelect">
-            <option>Tomato</option>
-            <option>Potato</option>
-            <option>Carrot</option>
-            <option>Chili</option>
-            <option>Rice</option>
-            <option>Wheat</option>
-            <option>Maize</option>
-            <option>Onion</option>
-            <option>Brinjal</option>
-            <option>Apple</option>
-            <option>Mango</option>
-            <option>Grapes</option>
-            <option>Cotton</option>
-            <option>Groundnut</option>
-            <option>Banana</option>
-        </select>
-
-        <input type="file" id="imageInput">
-        <button onclick="uploadImage()">Predict Disease</button>
-
-        <div id="diseaseResult" class="result-box"></div>
+  <div class="card">
+    <div class="upload-box">
+      <input type="file" id="imageInput">
     </div>
+
+    <select id="plantSelect">
+      <option>Tomato</option>
+      <option>Potato</option>
+      <option>Apple</option>
+      <option>Rice</option>
+      <option>Wheat</option>
+      <option>Sugarcane</option>
+      <option>Grapes</option>
+      <option>Cotton</option>
+    </select>
+
+    <br><br>
+    <button onclick="predictDisease()">Analyze Plant Health</button>
+
+    <div id="diseaseResult"></div>
+  </div>
 </div>
 
 <script src="script.js"></script>
