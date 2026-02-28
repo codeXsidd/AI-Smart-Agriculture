@@ -51,6 +51,19 @@ button:hover {
 
 .result-box {
     margin-top: 15px;
+
+nav {
+    background: #27ae60;
+    padding: 10px;
+    text-align: center;
+}
+
+nav a {
+    color: white;
+    margin: 0 15px;
+    text-decoration: none;
+    font-weight: bold;
+}
     padding: 15px;
     border-radius: 8px;
     background: #f0f9f4;
