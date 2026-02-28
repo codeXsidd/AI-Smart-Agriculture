@@ -1,55 +1,63 @@
 const API = "https://ai-smart-agriculture.onrender.com";
 
-async function predictDisease() {
-  let file = document.getElementById("imageInput").files[0];
-  let resultDiv = document.getElementById("diseaseResult");
+function createResultCard(percent, title, message, isHigh=false) {
+  const colorClass = isHigh ? "high" : "low";
 
-  if (!file) {
-    alert("Upload image");
-    return;
-  }
-
-  let formData = new FormData();
-  formData.append("file", file);
-
-  let response = await fetch(`${API}/predict_disease/`, {
-    method: "POST",
-    body: formData
-  });
-
-  let data = await response.json();
-
-  resultDiv.innerHTML = `
-    <div class="result-card">
-      <div class="circle">${data.confidence_percentage}%</div>
-      <h2>${data.disease}</h2>
-      <p><b>Severity:</b> ${data.severity_percentage}%</p>
-      <p><b>Organic Cure:</b> ${data.organic_cure}</p>
-      <p><b>Chemical Cure:</b> ${data.chemical_cure}</p>
-      <p>${data.ai_explanation}</p>
+  return `
+    <div class="result-card ${colorClass}">
+      <div class="progress-circle" id="circle">
+        ${percent}%
+      </div>
+      <div>
+        <h2>${title}</h2>
+        <p>${message}</p>
+      </div>
     </div>
   `;
 }
 
+async function predictDisease() {
+  const file = document.getElementById("imageInput").files[0];
+  if (!file) return alert("Upload image");
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch(`${API}/predict_disease`, {
+    method: "POST",
+    body: formData
+  });
+
+  const data = await response.json();
+
+  document.getElementById("diseaseResult").innerHTML =
+    createResultCard(
+      data.severity_percentage,
+      data.disease,
+      data.ai_explanation,
+      data.severity_percentage > 60
+    );
+}
+
 async function predictRisk() {
-  let formData = new FormData();
+  const formData = new FormData();
   formData.append("crop", document.getElementById("crop").value);
   formData.append("temperature", document.getElementById("temp").value);
   formData.append("humidity", document.getElementById("humidity").value);
   formData.append("rainfall", document.getElementById("rainfall").value);
 
-  let response = await fetch(`${API}/predict_risk/`, {
+  const response = await fetch(`${API}/predict_risk`, {
     method: "POST",
     body: formData
   });
 
-  let data = await response.json();
+  const data = await response.json();
 
-  document.getElementById("riskResult").innerHTML = `
-    <div class="result-card">
-      <div class="circle">${data.risk_percentage}%</div>
-      <h2>${data.predicted_disease}</h2>
-      <p>${data.message}</p>
-    </div>
-  `;
+  document.getElementById("riskResult").innerHTML =
+    createResultCard(
+      data.risk_percentage,
+      data.predicted_disease,
+      data.message,
+      data.risk_percentage > 60
+    );
 }
