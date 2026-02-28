@@ -1,38 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>AI Smart Agriculture</title>
+    <title>Disease Detection</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<header>
-    <h1>🌿 AI Smart Agriculture</h1>
-    <p>Smart Disease Detection & Early Risk Prediction System</p>
-</header>
+<nav>
+    <a href="index.html">After Infection</a>
+    <a href="risk.html">Before Infection</a>
+</nav>
 
 <div class="container">
+    <h1>🌿 AI Smart Agriculture</h1>
 
-    <!-- SECTION 1 -->
     <div class="card">
-        <h2>After Infection – Disease Detection</h2>
+        <h2>Disease Detection</h2>
 
         <select id="plantSelect">
-            <option value="Tomato">Tomato</option>
-            <option value="Potato">Potato</option>
-            <option value="Corn">Corn</option>
-            <option value="Apple">Apple</option>
-            <option value="Grape">Grape</option>
-            <option value="Pepper">Pepper</option>
-            <option value="Strawberry">Strawberry</option>
-            <option value="Carrot">Carrot</option>
-            <option value="Cabbage">Cabbage</option>
-            <option value="Onion">Onion</option>
-            <option value="Wheat">Wheat</option>
-            <option value="Rice">Rice</option>
-            <option value="Soybean">Soybean</option>
-            <option value="Banana">Banana</option>
-            <option value="Mango">Mango</option>
+            <option>Tomato</option>
+            <option>Potato</option>
+            <option>Carrot</option>
+            <option>Chili</option>
+            <option>Rice</option>
+            <option>Wheat</option>
+            <option>Maize</option>
+            <option>Onion</option>
+            <option>Brinjal</option>
+            <option>Apple</option>
+            <option>Mango</option>
+            <option>Grapes</option>
+            <option>Cotton</option>
+            <option>Groundnut</option>
+            <option>Banana</option>
         </select>
 
         <input type="file" id="imageInput">
@@ -40,28 +40,6 @@
 
         <div id="diseaseResult" class="result-box"></div>
     </div>
-
-    <!-- SECTION 2 -->
-    <div class="card">
-        <h2>Before Infection – Early Risk Prediction</h2>
-
-        <select id="crop">
-            <option value="Tomato">Tomato</option>
-            <option value="Potato">Potato</option>
-            <option value="Corn">Corn</option>
-            <option value="Rice">Rice</option>
-            <option value="Wheat">Wheat</option>
-        </select>
-
-        <input type="number" id="temp" placeholder="Temperature (°C)">
-        <input type="number" id="humidity" placeholder="Humidity (%)">
-        <input type="number" id="rainfall" placeholder="Rainfall (mm)">
-
-        <button onclick="predictRisk()">Predict Risk</button>
-
-        <div id="riskResult" class="result-box"></div>
-    </div>
-
 </div>
 
 <script src="script.js"></script>
