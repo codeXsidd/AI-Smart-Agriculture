@@ -21,9 +21,9 @@ app.add_middleware(
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# ==============================
-# LOAD MODELS
-# ==============================
+# =========================
+# LOAD RISK MODEL
+# =========================
 risk_model = pickle.load(
     open(os.path.join(BASE_DIR, "model2", "disease_risk_model.pkl"), "rb")
 )
@@ -36,6 +36,9 @@ disease_encoder = pickle.load(
     open(os.path.join(BASE_DIR, "model2", "disease_encoder.pkl"), "rb")
 )
 
+# =========================
+# LOAD TFLITE MODEL
+# =========================
 interpreter = tf.lite.Interpreter(
     model_path=os.path.join(BASE_DIR, "model1", "smart_agri_model_quant.tflite")
 )
@@ -44,17 +47,18 @@ interpreter.allocate_tensors()
 input_details = interpreter.get_input_details()
 output_details = interpreter.get_output_details()
 
-
+# =========================
+# ROOT
+# =========================
 @app.get("/")
 def home():
     return {"message": "AI Smart Agriculture API Running"}
 
-# ==============================
+# =========================
 # AFTER INFECTION (FIXED)
-# ==============================
+# =========================
 @app.post("/predict_disease/")
 async def predict_disease(file: UploadFile = File(...)):
-
     try:
         image_bytes = await file.read()
         image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
@@ -71,10 +75,7 @@ async def predict_disease(file: UploadFile = File(...)):
         confidence = float(np.max(output))
         predicted_index = int(np.argmax(output))
 
-        # IMPORTANT FIX:
-        # DO NOT use disease_encoder here
-
-        # Just use cure_dict safely
+        # SAFE MAPPING
         disease_names = list(cure_dict.keys())
 
         disease = disease_names[predicted_index % len(disease_names)]
@@ -93,9 +94,9 @@ async def predict_disease(file: UploadFile = File(...)):
     except Exception as e:
         return {"error": str(e)}
 
-# ==============================
-# BEFORE INFECTION (RISK MODEL)
-# ==============================
+# =========================
+# BEFORE INFECTION (FIXED)
+# =========================
 @app.post("/predict_risk/")
 def predict_risk(
     crop: str = Form(...),
@@ -104,17 +105,15 @@ def predict_risk(
     rainfall: float = Form(...)
 ):
     try:
-        crop = crop.lower()
-
-        if crop not in crop_encoder.classes_:
-            return {"error": f"{crop} not supported by trained model"}
+        crop = crop.strip().lower()
 
         crop_encoded = crop_encoder.transform([crop])[0]
 
         features = np.array([[crop_encoded, temperature, humidity, rainfall]])
 
         probabilities = risk_model.predict_proba(features)[0]
-        risk_percentage = int(max(probabilities) * 100)
+
+        risk_percentage = int(np.max(probabilities) * 100)
 
         predicted_disease = disease_encoder.inverse_transform(
             [np.argmax(probabilities)]
@@ -123,12 +122,11 @@ def predict_risk(
         return {
             "risk_percentage": risk_percentage,
             "predicted_disease": predicted_disease,
-            "message": f"{crop.capitalize()} – {risk_percentage}% risk of {predicted_disease} in next 5 days"
+            "message": f"{crop.capitalize()} – {risk_percentage}% risk of {predicted_disease}"
         }
 
     except Exception as e:
         return {"error": str(e)}
-
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=10000)
