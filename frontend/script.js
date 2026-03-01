@@ -231,14 +231,51 @@ async function predictRisk() {
    LOCAL STORAGE
 ================================================= */
 
-function saveToHistory(type, data) {
+function loadHistory() {
+
+  const container = document.getElementById("historyContainer");
+  if (!container) return;
+
   let history = JSON.parse(localStorage.getItem("agriHistory")) || [];
 
-  history.unshift({
-    type: type,
-    date: new Date().toLocaleString(),
-    result: data
-  });
+  if (history.length === 0) {
+    container.innerHTML = "<p>No prediction history available.</p>";
+    return;
+  }
 
-  localStorage.setItem("agriHistory", JSON.stringify(history));
+  container.innerHTML = "";
+
+  history.forEach(item => {
+
+    let resultHTML = "";
+
+    if (item.type === "Disease Detection") {
+      resultHTML = `
+        <p><b>Disease:</b> ${item.result.disease}</p>
+        <p><b>Confidence:</b> ${item.result.confidence_percentage}%</p>
+      `;
+    }
+
+    if (item.type === "Risk Prediction") {
+      resultHTML = `
+        <p><b>Prediction:</b> ${item.result.predicted_disease}</p>
+        <p><b>Risk %:</b> ${item.result.risk_percentage}%</p>
+      `;
+    }
+
+    const historyCard = `
+      <div class="history-card">
+        <h3>${item.type}</h3>
+        <p><b>Date:</b> ${item.date}</p>
+        ${resultHTML}
+      </div>
+    `;
+
+    container.innerHTML += historyCard;
+  });
+}
+
+function clearHistory() {
+  localStorage.removeItem("agriHistory");
+  loadHistory();
 }
