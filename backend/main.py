@@ -141,4 +141,4 @@ def predict_risk(
         }
 
     except Exception as e:
-        return {"error": str(e)}000)
+        return {"error": str(e)}
