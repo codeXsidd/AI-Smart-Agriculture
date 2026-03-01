@@ -15,26 +15,16 @@
 
 <div class="main">
   <h1>Prediction History</h1>
-  <div id="historyList"></div>
+
+  <div class="card">
+    <button onclick="clearHistory()">Clear History</button>
+    <div id="historyContainer"></div>
+  </div>
 </div>
 
+<script src="script.js"></script>
 <script>
-  const history = JSON.parse(localStorage.getItem("agriHistory")) || [];
-  const container = document.getElementById("historyList");
-
-  if (history.length === 0) {
-    container.innerHTML = "<p>No history available.</p>";
-  } else {
-    history.reverse().forEach(item => {
-      container.innerHTML += `
-        <div class="result-card">
-          <h3>${item.type} Prediction</h3>
-          <p><b>Date:</b> ${item.date}</p>
-          <pre>${JSON.stringify(item.result, null, 2)}</pre>
-        </div>
-      `;
-    });
-  }
+  loadHistory();
 </script>
 
 </body>
