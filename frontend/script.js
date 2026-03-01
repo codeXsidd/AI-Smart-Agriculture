@@ -1,25 +1,43 @@
 const API = "https://ai-smart-agriculture.onrender.com";
 
 /* =================================================
-   AUTO DETECT PAGE & LOAD CORRECT CROPS
+   LOAD CROPS BASED ON PAGE
 ================================================= */
 
-window.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("DOMContentLoaded", loadCrops);
 
-  const path = window.location.pathname;
+async function loadCrops() {
 
-  if (path.includes("index.html")) {
-    loadDiseaseCrops();
+  const cropSelect = document.getElementById("crop");
+  if (!cropSelect) return;
+
+  let endpoint = "";
+
+  // Detect page automatically
+  if (window.location.pathname.includes("index.html")) {
+    endpoint = "/get_disease_crops";
+  } 
+  else if (window.location.pathname.includes("before.html")) {
+    endpoint = "/get_risk_crops";
   }
 
-  if (path.includes("before.html")) {
-    loadRiskCrops();
-  }
+  try {
+    const response = await fetch(`${API}${endpoint}`);
+    const data = await response.json();
 
-  if (path.includes("history.html")) {
-    loadHistory();
+    cropSelect.innerHTML = "";
+
+    data.crops.forEach(crop => {
+      const option = document.createElement("option");
+      option.value = crop;
+      option.textContent = crop;
+      cropSelect.appendChild(option);
+    });
+
+  } catch (error) {
+    cropSelect.innerHTML = "<option>Error loading crops</option>";
   }
-});
+}
 
 /* =================================================
    LOAD DISEASE MODEL CROPS (After Infection)
