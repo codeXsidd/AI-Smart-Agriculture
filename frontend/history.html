@@ -2,6 +2,8 @@
 <html>
 <head>
   <title>AgriVision - History</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -17,15 +19,19 @@
   <h1>Prediction History</h1>
 
   <div class="card">
-    <button onclick="clearHistory()">Clear History</button>
-    <div id="historyContainer"></div>
+
+    <button onclick="clearHistory()" style="margin-bottom:15px;">
+      Clear History
+    </button>
+
+    <div id="historyContainer">
+      <p>Loading history...</p>
+    </div>
+
   </div>
 </div>
 
 <script src="script.js"></script>
-<script>
-  loadHistory();
-</script>
 
 </body>
 </html>
