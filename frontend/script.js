@@ -1,5 +1,5 @@
 const API = "https://ai-smart-agriculture.onrender.com";
-
+// ================================
 
 let currentMode = "manual";
 function setManualMode() {
@@ -52,6 +52,31 @@ async function getWeather() {
   }
 }
 
+// ================================
+// Load crops when page loads
+window.addEventListener("DOMContentLoaded", loadCrops);
+
+async function loadCrops() {
+  try {
+    const response = await fetch(`${API}/get_crops`);
+    const data = await response.json();
+
+    const cropSelect = document.getElementById("crop");
+    cropSelect.innerHTML = "";
+
+    data.crops.forEach(crop => {
+      const option = document.createElement("option");
+      option.value = crop;
+      option.textContent = crop;
+      cropSelect.appendChild(option);
+    });
+
+  } catch (error) {
+    console.error("Failed to load crops:", error);
+  }
+}
+
+// ================================
 
  window.onload = async function () {
     try {
