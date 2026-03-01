@@ -20,7 +20,9 @@
 
     <!-- Crop Dropdown -->
     <label>Select Crop</label>
-    <select id="crop"></select>
+    <select id="crop">
+      <option>Loading crops...</option>
+    </select>
 
     <br><br>
 
@@ -47,11 +49,11 @@
     <div id="autoSection" style="display:none;">
       <input type="text" id="city" placeholder="Enter City Name">
       <button onclick="getWeather()">Fetch Weather</button>
-
       <p id="weatherInfo"></p>
     </div>
 
     <br>
+
     <button onclick="predictRisk()">Forecast Risk</button>
 
     <div id="riskResult"></div>
