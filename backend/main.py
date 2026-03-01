@@ -105,9 +105,24 @@ def predict_risk(
     rainfall: float = Form(...)
 ):
     try:
-        crop = crop.strip().lower()
+        crop = crop.strip()
 
-        crop_encoded = crop_encoder.transform([crop])[0]
+        # Get allowed crops from encoder
+        allowed_crops = crop_encoder.classes_.tolist()
+
+        # Auto-fix capitalization
+        match = None
+        for c in allowed_crops:
+            if c.lower() == crop.lower():
+                match = c
+                break
+
+        if match is None:
+            return {
+                "error": f"{crop} not supported. Allowed crops: {allowed_crops}"
+            }
+
+        crop_encoded = crop_encoder.transform([match])[0]
 
         features = np.array([[crop_encoded, temperature, humidity, rainfall]])
 
@@ -122,11 +137,8 @@ def predict_risk(
         return {
             "risk_percentage": risk_percentage,
             "predicted_disease": predicted_disease,
-            "message": f"{crop.capitalize()} – {risk_percentage}% risk of {predicted_disease}"
+            "message": f"{match} – {risk_percentage}% risk of {predicted_disease}"
         }
 
     except Exception as e:
-        return {"error": str(e)}
-
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=10000)
+        return {"error": str(e)}000)
