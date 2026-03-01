@@ -142,3 +142,9 @@ def predict_risk(
 
     except Exception as e:
         return {"error": str(e)}
+
+
+# =========================
+@app.get("/supported_crops/")
+def supported_crops():
+    return {"crops": crop_encoder.classes_.tolist()}
