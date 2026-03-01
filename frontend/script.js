@@ -78,43 +78,50 @@ function setAutoMode() {
    WEATHER API
 ================================================= */
 
-async function getWeather() {
-  const city = document.getElementById("city").value;
-  const API_KEY = "ae5bb22c76691a235ade9aabecf3d0db";
+async function getCurrentLocationWeather() {
 
-  if (!city) {
-    alert("Enter city name");
+  if (!navigator.geolocation) {
+    alert("Geolocation not supported by browser");
     return;
   }
 
-  try {
-    const response = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`
-    );
+  document.getElementById("weatherInfo").innerHTML = "Detecting location...";
 
-    const data = await response.json();
+  navigator.geolocation.getCurrentPosition(async function(position) {
 
-    if (data.cod !== 200) {
-      alert("City not found");
-      return;
+    const lat = position.coords.latitude;
+    const lon = position.coords.longitude;
+
+    const API_KEY = "ae5bb22c76691a235ade9aabecf3d0db"; // Replace properly
+
+    try {
+      const response = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`
+      );
+
+      const data = await response.json();
+
+      const temp = data.main.temp;
+      const humidity = data.main.humidity;
+      const rainfall = data.rain ? (data.rain["1h"] || 0) : 0;
+
+      // Fill manual fields
+      document.getElementById("temp").value = temp;
+      document.getElementById("humidity").value = humidity;
+      document.getElementById("rainfall").value = rainfall;
+
+      document.getElementById("weatherInfo").innerHTML =
+        `Location: ${data.name}<br>
+         Temp: ${temp}°C | Humidity: ${humidity}% | Rainfall: ${rainfall}mm`;
+
+    } catch (error) {
+      alert("Weather API error");
     }
 
-    const temp = data.main.temp;
-    const humidity = data.main.humidity;
-    const rainfall = data.rain ? (data.rain["1h"] || 0) : 0;
-
-    document.getElementById("temp").value = temp;
-    document.getElementById("humidity").value = humidity;
-    document.getElementById("rainfall").value = rainfall;
-
-    document.getElementById("weatherInfo").innerHTML =
-      `Temp: ${temp}°C | Humidity: ${humidity}% | Rainfall: ${rainfall}mm`;
-
-  } catch {
-    alert("Weather API Error");
-  }
+  }, function(error) {
+    alert("Location permission denied");
+  });
 }
-
 /* =================================================
    AFTER INFECTION (Disease Detection)
 ================================================= */
