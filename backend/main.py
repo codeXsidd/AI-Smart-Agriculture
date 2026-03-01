@@ -143,6 +143,35 @@ def predict_risk(
 
 
 # =========================
-@app.get("/supported_crops/")
-def supported_crops():
-    return {"crops": crop_encoder.classes_.tolist()}
+# GET RISK MODEL CROPS
+# =========================
+@app.get("/risk_crops/")
+def get_risk_crops():
+    return {
+        "crops": crop_encoder.classes_.tolist()
+    }
+
+
+# =========================
+# GET DISEASE MODEL CROPS
+# =========================
+@app.get("/disease_crops/")
+def get_disease_crops():
+
+    disease_names = list(cure_dict.keys())
+
+    crop_set = set()
+
+    for disease in disease_names:
+        if "___" in disease:
+            crop_name = disease.split("___")[0]
+            crop_set.add(crop_name)
+
+    return {
+        "crops": sorted(list(crop_set))
+    }
+    
+def get_crops():
+    return {
+        "crops": crop_encoder.classes_.tolist()
+    }
