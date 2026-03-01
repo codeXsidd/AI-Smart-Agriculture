@@ -24,9 +24,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # =========================
 # LOAD RISK MODEL
 # =========================
-risk_model = pickle.load(
-    open(os.path.join(BASE_DIR, "model2", "disease_risk_model.pkl"), "rb")
-)
+risk_model = pickle.load(open(os.path.join(BASE_DIR, "model2", "disease_risk_model.pkl"), "rb"))
 
 crop_encoder = pickle.load(
     open(os.path.join(BASE_DIR, "model2", "crop_encoder.pkl"), "rb")
