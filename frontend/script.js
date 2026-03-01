@@ -1,57 +1,135 @@
-const BASE_URL = "https://ai-smart-agriculture.onrender.com";
+const API = "https://ai-smart-agriculture.onrender.com";
 
+/* ===============================
+   AFTER INFECTION (Disease)
+================================ */
 async function predictDisease() {
-    const fileInput = document.getElementById("imageInput");
-    const plant = document.getElementById("plantSelect").value;
 
-    const formData = new FormData();
-    formData.append("file", fileInput.files[0]);
-    formData.append("plant", plant);
+  const file = document.getElementById("imageInput").files[0];
 
-    try {
-        const response = await fetch(`${BASE_URL}/predict`, {
-            method: "POST",
-            body: formData
-        });
+  if (!file) {
+    alert("Upload image first");
+    return;
+  }
 
-        const data = await response.json();
+  const formData = new FormData();
+  formData.append("file", file);
 
-        document.getElementById("result").innerHTML =
-            `<h3>Disease: ${data.disease}</h3>
-             <p>Severity: ${data.severity}%</p>
-             <p>Organic Cure: ${data.organic}</p>
-             <p>Chemical Cure: ${data.chemical}</p>`;
-    } catch (error) {
-        document.getElementById("result").innerHTML =
-            "❌ Error connecting to server.";
+  try {
+
+    const response = await fetch(`${API}/predict_disease/`, {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await response.json();
+    console.log("Disease Response:", data);
+
+    // 🔴 If backend returns error
+    if (data.error) {
+      document.getElementById("diseaseResult").innerHTML = `
+        <div class="result-card high">
+          <div>
+            <h2>Model Error</h2>
+            <p>${data.error}</p>
+          </div>
+        </div>
+      `;
+      return;
     }
+
+    if (!data.disease) {
+      alert("Model did not return valid output");
+      return;
+    }
+
+    const riskClass =
+      data.severity_percentage > 60 ? "high" : "low";
+
+    document.getElementById("diseaseResult").innerHTML = `
+      <div class="result-card ${riskClass}">
+        <div class="progress-circle">${data.severity_percentage}%</div>
+        <div>
+          <h2>${data.disease}</h2>
+          <p><b>Confidence:</b> ${data.confidence_percentage}%</p>
+          <p>${data.ai_explanation}</p>
+          <p><b>Organic Cure:</b> ${data.organic_cure}</p>
+          <p><b>Chemical Cure:</b> ${data.chemical_cure}</p>
+        </div>
+      </div>
+    `;
+
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Server Error");
+  }
 }
+
+
+/* ===============================
+   BEFORE INFECTION (Risk)
+================================ */
 async function predictRisk() {
-    const plant = document.getElementById("riskPlant").value;
-    const temp = document.getElementById("temperature").value;
-    const humidity = document.getElementById("humidity").value;
-    const rainfall = document.getElementById("rainfall").value;
 
-    try {
-        const response = await fetch(`${BASE_URL}/risk`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                crop: plant,
-                temperature: temp,
-                humidity: humidity,
-                rainfall: rainfall
-            })
-        });
+  const crop = document.getElementById("crop").value;
+  const temperature = document.getElementById("temp").value;
+  const humidity = document.getElementById("humidity").value;
+  const rainfall = document.getElementById("rainfall").value;
 
-        const data = await response.json();
+  if (!temperature || !humidity || !rainfall) {
+    alert("Fill all fields");
+    return;
+  }
 
-        document.getElementById("riskResult").innerHTML =
-            `<h3>${data.message}</h3>`;
-    } catch (error) {
-        document.getElementById("riskResult").innerHTML =
-            "❌ Error connecting to server.";
+  const formData = new FormData();
+  formData.append("crop", crop);
+  formData.append("temperature", temperature);
+  formData.append("humidity", humidity);
+  formData.append("rainfall", rainfall);
+
+  try {
+
+    const response = await fetch(`${API}/predict_risk/`, {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await response.json();
+    console.log("Risk Response:", data);
+
+    // 🔴 If backend returns error
+    if (data.error) {
+      document.getElementById("riskResult").innerHTML = `
+        <div class="result-card high">
+          <div>
+            <h2>Error</h2>
+            <p>${data.error}</p>
+          </div>
+        </div>
+      `;
+      return;
     }
+
+    if (!data.risk_percentage) {
+      alert("Model did not return valid output");
+      return;
+    }
+
+    const riskClass =
+      data.risk_percentage > 60 ? "high" : "low";
+
+    document.getElementById("riskResult").innerHTML = `
+      <div class="result-card ${riskClass}">
+        <div class="progress-circle">${data.risk_percentage}%</div>
+        <div>
+          <h2>${data.predicted_disease}</h2>
+          <p>${data.message}</p>
+        </div>
+      </div>
+    `;
+
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Server Error");
+  }
 }
