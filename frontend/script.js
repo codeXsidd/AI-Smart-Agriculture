@@ -1,19 +1,25 @@
 const API = "https://ai-smart-agriculture.onrender.com";
 
-window.onload = async function() {
-  const response = await fetch(`${API}/supported_crops/`);
-  const data = await response.json();
+ window.onload = async function () {
+    try {
+      const response = await fetch(`${API}/supported_crops/`);
+      const data = await response.json();
 
-  const cropSelect = document.getElementById("crop");
-  cropSelect.innerHTML = "";
+      const cropSelect = document.getElementById("crop");
+      cropSelect.innerHTML = "";
 
-  data.crops.forEach(crop => {
-    const option = document.createElement("option");
-    option.value = crop;
-    option.textContent = crop;
-    cropSelect.appendChild(option);
-  });
-};
+      data.crops.forEach(crop => {
+        const option = document.createElement("option");
+        option.value = crop;
+        option.textContent = crop;
+        cropSelect.appendChild(option);
+      });
+
+    } catch (error) {
+      document.getElementById("crop").innerHTML =
+        "<option>Error loading crops</option>";
+    }
+  };
 
 // ================================
 // After Infection (Disease Detection)
