@@ -2,6 +2,8 @@
 <html>
 <head>
   <title>AgriVision - Before Infection</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -18,18 +20,26 @@
 
   <div class="card">
 
-    <!-- Crop Dropdown -->
+    <!-- Dynamic Crop Dropdown (Loaded from /risk_crops/) -->
     <label>Select Crop</label>
-    <select id="crop"></select>
+    <select id="crop">
+      <option>Loading crops...</option>
+    </select>
 
     <br><br>
 
     <!-- Mode Toggle -->
     <div class="mode-toggle">
-      <button onclick="setManualMode()" id="manualBtn" class="active-mode">
+      <button 
+        onclick="setManualMode()" 
+        id="manualBtn" 
+        class="active-mode">
         Manual
       </button>
-      <button onclick="setAutoMode()" id="autoBtn">
+
+      <button 
+        onclick="setAutoMode()" 
+        id="autoBtn">
         Auto (Weather API)
       </button>
     </div>
@@ -38,21 +48,44 @@
 
     <!-- MANUAL INPUTS -->
     <div id="manualSection">
-      <input type="number" id="temp" placeholder="Temperature (°C)">
-      <input type="number" id="humidity" placeholder="Humidity (%)">
-      <input type="number" id="rainfall" placeholder="Rainfall (mm)">
+      <input 
+        type="number" 
+        id="temp" 
+        placeholder="Temperature (°C)" 
+        step="0.1"
+      >
+      <input 
+        type="number" 
+        id="humidity" 
+        placeholder="Humidity (%)"
+        step="0.1"
+      >
+      <input 
+        type="number" 
+        id="rainfall" 
+        placeholder="Rainfall (mm)"
+        step="0.1"
+      >
     </div>
 
-    <!-- AUTO WEATHER -->
+    <!-- AUTO WEATHER SECTION -->
     <div id="autoSection" style="display:none;">
-      <input type="text" id="city" placeholder="Enter City Name">
-      <button onclick="getWeather()">Fetch Weather</button>
+      
+      <button onclick="getCurrentLocationWeather()">
+        Use My Current Location
+      </button>
 
-      <p id="weatherInfo"></p>
+      <p id="weatherInfo" style="margin-top:10px;"></p>
+
     </div>
 
     <br>
-    <button onclick="predictRisk()">Forecast Risk</button>
+
+    <button onclick="predictRisk()">
+      Forecast Risk
+    </button>
+
+    <br><br>
 
     <div id="riskResult"></div>
 
@@ -60,5 +93,6 @@
 </div>
 
 <script src="script.js"></script>
+
 </body>
 </html>
