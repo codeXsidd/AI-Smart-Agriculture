@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>History</title>
+  <title>AgriVision - History</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,11 +15,27 @@
 
 <div class="main">
   <h1>Prediction History</h1>
-
-  <div class="card">
-    <p>No history connected to database yet.</p>
-  </div>
+  <div id="historyList"></div>
 </div>
+
+<script>
+  const history = JSON.parse(localStorage.getItem("agriHistory")) || [];
+  const container = document.getElementById("historyList");
+
+  if (history.length === 0) {
+    container.innerHTML = "<p>No history available.</p>";
+  } else {
+    history.reverse().forEach(item => {
+      container.innerHTML += `
+        <div class="result-card">
+          <h3>${item.type} Prediction</h3>
+          <p><b>Date:</b> ${item.date}</p>
+          <pre>${JSON.stringify(item.result, null, 2)}</pre>
+        </div>
+      `;
+    });
+  }
+</script>
 
 </body>
 </html>
