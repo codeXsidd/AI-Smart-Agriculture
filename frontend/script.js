@@ -1,141 +1,129 @@
 const API = "https://ai-smart-agriculture.onrender.com";
 
-/* ===========================================
-   PAGE AUTO DETECTION
-=========================================== */
+/* =================================================
+   LOAD CROPS (ONLY ONE METHOD)
+================================================= */
 
-window.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("DOMContentLoaded", loadCrops);
 
-  const path = window.location.pathname;
+async function loadCrops() {
+  try {
+    const response = await fetch(`${API}/get_crops`);
+    const data = await response.json();
 
-  if (path.includes("index.html")) {
-    loadDiseaseCrops();
-  }
+    const cropSelect = document.getElementById("crop");
+    if (!cropSelect) return;
 
-  if (path.includes("before.html")) {
-    loadRiskCrops();
-  }
+    cropSelect.innerHTML = "";
 
-  if (path.includes("history.html")) {
-    loadHistory();
-  }
+    data.crops.forEach(crop => {
+      const option = document.createElement("option");
+      option.value = crop;
+      option.textContent = crop;
+      cropSelect.appendChild(option);
+    });
 
-});
-
-/* ===========================================
-   GENERIC FETCH WITH RETRY (IMPORTANT FIX)
-=========================================== */
-
-async function fetchWithRetry(url, retries = 3, delay = 3000) {
-
-  for (let i = 0; i < retries; i++) {
-    try {
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        throw new Error("Server not ready");
-      }
-
-      return await response.json();
-
-    } catch (error) {
-
-      if (i === retries - 1) throw error;
-
-      console.log("Retrying API call...");
-      await new Promise(res => setTimeout(res, delay));
+  } catch (error) {
+    console.error("Failed to load crops:", error);
+    const cropSelect = document.getElementById("crop");
+    if (cropSelect) {
+      cropSelect.innerHTML = "<option>Error loading crops</option>";
     }
   }
 }
 
-/* ===========================================
-   LOAD DISEASE CROPS
-=========================================== */
-
-async function loadDiseaseCrops() {
-
-  const cropSelect = document.getElementById("crop");
-  if (!cropSelect) return;
-
-  cropSelect.innerHTML = "<option>Loading crops...</option>";
-
-  try {
-
-    const data = await fetchWithRetry(API + "/disease_crops/");
-
-    cropSelect.innerHTML = "";
-
-    data.crops.forEach(crop => {
-      const option = document.createElement("option");
-      option.value = crop;
-      option.textContent = crop;
-      cropSelect.appendChild(option);
-    });
-
-  } catch (error) {
-    cropSelect.innerHTML = "<option>Backend Sleeping... Refresh</option>";
-    console.error("Disease crop load error:", error);
-  }
-}
-
-/* ===========================================
-   LOAD RISK CROPS
-=========================================== */
-
-async function loadRiskCrops() {
-
-  const cropSelect = document.getElementById("crop");
-  if (!cropSelect) return;
-
-  cropSelect.innerHTML = "<option>Loading crops...</option>";
-
-  try {
-
-    const data = await fetchWithRetry(API + "/risk_crops/");
-
-    cropSelect.innerHTML = "";
-
-    data.crops.forEach(crop => {
-      const option = document.createElement("option");
-      option.value = crop;
-      option.textContent = crop;
-      cropSelect.appendChild(option);
-    });
-
-  } catch (error) {
-    cropSelect.innerHTML = "<option>Backend Sleeping... Refresh</option>";
-    console.error("Risk crop load error:", error);
-  }
-}
-
-/* ===========================================
-   IMAGE PREVIEW
-=========================================== */
+/* =================================================
+   IMAGE PREVIEW (After Infection)
+================================================= */
 
 function previewImage(event) {
-
   const file = event.target.files[0];
   const preview = document.getElementById("imagePreview");
 
-  if (!file || !preview) return;
-
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    preview.src = e.target.result;
-    preview.style.display = "block";
-  };
-  reader.readAsDataURL(file);
+  if (file && preview) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      preview.src = e.target.result;
+      preview.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+  }
 }
 
-/* ===========================================
-   AFTER INFECTION
-=========================================== */
+/* =================================================
+   MANUAL / AUTO MODE (Before Infection)
+================================================= */
+
+let currentMode = "manual";
+
+function setManualMode() {
+  currentMode = "manual";
+  document.getElementById("manualSection").style.display = "block";
+  document.getElementById("autoSection").style.display = "none";
+
+  document.getElementById("manualBtn").classList.add("active-mode");
+  document.getElementById("autoBtn").classList.remove("active-mode");
+}
+
+function setAutoMode() {
+  currentMode = "auto";
+  document.getElementById("manualSection").style.display = "none";
+  document.getElementById("autoSection").style.display = "block";
+
+  document.getElementById("manualBtn").classList.remove("active-mode");
+  document.getElementById("autoBtn").classList.add("active-mode");
+}
+
+/* =================================================
+   WEATHER API
+================================================= */
+
+async function getWeather() {
+  const city = document.getElementById("city").value;
+  const API_KEY = "ae5bb22c76691a235ade9aabecf3d0db";
+
+  if (!city) {
+    alert("Enter city name");
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`
+    );
+
+    const data = await response.json();
+
+    if (data.cod !== 200) {
+      alert("City not found");
+      return;
+    }
+
+    const temp = data.main.temp;
+    const humidity = data.main.humidity;
+    const rainfall = data.rain ? (data.rain["1h"] || 0) : 0;
+
+    document.getElementById("temp").value = temp;
+    document.getElementById("humidity").value = humidity;
+    document.getElementById("rainfall").value = rainfall;
+
+    document.getElementById("weatherInfo").innerHTML =
+      `Temp: ${temp}°C | Humidity: ${humidity}% | Rainfall: ${rainfall}mm`;
+
+  } catch {
+    alert("Weather API Error");
+  }
+}
+
+/* =================================================
+   AFTER INFECTION (Disease Detection)
+================================================= */
 
 async function predictDisease() {
 
   const fileInput = document.getElementById("imageInput");
 
-  if (!fileInput.files.length) {
+  if (!fileInput || !fileInput.files.length) {
     alert("Upload image first");
     return;
   }
@@ -144,10 +132,10 @@ async function predictDisease() {
 
   const formData = new FormData();
   formData.append("file", fileInput.files[0]);
+  formData.append("crop", document.getElementById("crop").value);
 
   try {
-
-    const response = await fetch(API + "/predict_disease/", {
+    const response = await fetch(`${API}/predict_disease/`, {
       method: "POST",
       body: formData
     });
@@ -155,36 +143,44 @@ async function predictDisease() {
     const data = await response.json();
 
     if (data.error) {
-      document.getElementById("diseaseResult").innerHTML = data.error;
+      document.getElementById("diseaseResult").innerHTML =
+        `<div class="result-card high">${data.error}</div>`;
       return;
     }
 
     document.getElementById("diseaseResult").innerHTML = `
-      <div class="result-card">
-        <h2>${data.disease}</h2>
-        <p><b>Confidence:</b> ${data.confidence_percentage}%</p>
-        <p>${data.ai_explanation}</p>
+      <div class="result-card ${data.severity_percentage > 60 ? "high" : "low"}">
+        <div class="progress-circle">${data.severity_percentage}%</div>
+        <div>
+          <h2>${data.disease}</h2>
+          <p><b>Confidence:</b> ${data.confidence_percentage}%</p>
+          <p>${data.ai_explanation}</p>
+          <p><b>Organic Cure:</b> ${data.organic_cure}</p>
+          <p><b>Chemical Cure:</b> ${data.chemical_cure}</p>
+        </div>
       </div>
     `;
 
-  } catch (error) {
-    document.getElementById("diseaseResult").innerHTML = "Server Error";
+    saveToHistory("Disease Detection", data);
+
+  } catch {
+    alert("Server Error");
   }
 }
 
-/* ===========================================
-   BEFORE INFECTION
-=========================================== */
+/* =================================================
+   BEFORE INFECTION (Risk Prediction)
+================================================= */
 
 async function predictRisk() {
 
-  const crop = document.getElementById("crop").value;
-  const temp = document.getElementById("temp").value;
-  const humidity = document.getElementById("humidity").value;
-  const rainfall = document.getElementById("rainfall").value;
+  const crop = document.getElementById("crop")?.value;
+  const temperature = document.getElementById("temp")?.value;
+  const humidity = document.getElementById("humidity")?.value;
+  const rainfall = document.getElementById("rainfall")?.value;
 
-  if (!temp || !humidity || !rainfall) {
-    alert("Enter weather values");
+  if (!temperature || !humidity || !rainfall) {
+    alert("Please provide weather data");
     return;
   }
 
@@ -192,13 +188,12 @@ async function predictRisk() {
 
   const formData = new FormData();
   formData.append("crop", crop);
-  formData.append("temperature", temp);
+  formData.append("temperature", temperature);
   formData.append("humidity", humidity);
   formData.append("rainfall", rainfall);
 
   try {
-
-    const response = await fetch(API + "/predict_risk/", {
+    const response = await fetch(`${API}/predict_risk/`, {
       method: "POST",
       body: formData
     });
@@ -206,18 +201,37 @@ async function predictRisk() {
     const data = await response.json();
 
     if (data.error) {
-      document.getElementById("riskResult").innerHTML = data.error;
+      document.getElementById("riskResult").innerHTML =
+        `<div class="result-card high">${data.error}</div>`;
       return;
     }
 
     document.getElementById("riskResult").innerHTML = `
-      <div class="result-card">
+      <div class="result-card ${data.risk_percentage > 60 ? "high" : "low"}">
         <h2>${data.predicted_disease}</h2>
         <p>${data.message}</p>
       </div>
     `;
 
-  } catch (error) {
-    document.getElementById("riskResult").innerHTML = "Server Error";
+    saveToHistory("Risk Prediction", data);
+
+  } catch {
+    alert("Server Error");
   }
+}
+
+/* =================================================
+   LOCAL STORAGE
+================================================= */
+
+function saveToHistory(type, data) {
+  let history = JSON.parse(localStorage.getItem("agriHistory")) || [];
+
+  history.unshift({
+    type: type,
+    date: new Date().toLocaleString(),
+    result: data
+  });
+
+  localStorage.setItem("agriHistory", JSON.stringify(history));
 }
