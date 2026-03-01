@@ -1,6 +1,5 @@
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
-import uvicorn
 import pickle
 import numpy as np
 import tensorflow as tf
@@ -11,6 +10,9 @@ from cure_dict import cure_dict
 
 app = FastAPI()
 
+# =========================
+# CORS
+# =========================
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -24,7 +26,9 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # =========================
 # LOAD RISK MODEL
 # =========================
-risk_model = pickle.load(open(os.path.join(BASE_DIR, "model2", "disease_risk_model.pkl"), "rb"))
+risk_model = pickle.load(
+    open(os.path.join(BASE_DIR, "model2", "disease_risk_model.pkl"), "rb")
+)
 
 crop_encoder = pickle.load(
     open(os.path.join(BASE_DIR, "model2", "crop_encoder.pkl"), "rb")
@@ -35,7 +39,7 @@ disease_encoder = pickle.load(
 )
 
 # =========================
-# LOAD TFLITE MODEL
+# LOAD TFLITE MODEL (AFTER INFECTION)
 # =========================
 interpreter = tf.lite.Interpreter(
     model_path=os.path.join(BASE_DIR, "model1", "smart_agri_model_quant.tflite")
@@ -52,9 +56,9 @@ output_details = interpreter.get_output_details()
 def home():
     return {"message": "AI Smart Agriculture API Running"}
 
-# =========================
-# AFTER INFECTION (FIXED)
-# =========================
+# =====================================================
+# AFTER INFECTION - DISEASE DETECTION
+# =====================================================
 @app.post("/predict_disease/")
 async def predict_disease(file: UploadFile = File(...)):
     try:
@@ -73,10 +77,13 @@ async def predict_disease(file: UploadFile = File(...)):
         confidence = float(np.max(output))
         predicted_index = int(np.argmax(output))
 
-        # SAFE MAPPING
+        # Safe mapping
         disease_names = list(cure_dict.keys())
 
-        disease = disease_names[predicted_index % len(disease_names)]
+        if predicted_index >= len(disease_names):
+            predicted_index = predicted_index % len(disease_names)
+
+        disease = disease_names[predicted_index]
 
         severity_percentage = int(confidence * 100)
 
@@ -92,9 +99,9 @@ async def predict_disease(file: UploadFile = File(...)):
     except Exception as e:
         return {"error": str(e)}
 
-# =========================
-# BEFORE INFECTION (FIXED)
-# =========================
+# =====================================================
+# BEFORE INFECTION - RISK PREDICTION
+# =====================================================
 @app.post("/predict_risk/")
 def predict_risk(
     crop: str = Form(...),
@@ -105,23 +112,23 @@ def predict_risk(
     try:
         crop = crop.strip()
 
-        # Get allowed crops from encoder
         allowed_crops = crop_encoder.classes_.tolist()
 
-        # Auto-fix capitalization
-        match = None
+        # Case-insensitive matching
+        matched_crop = None
         for c in allowed_crops:
             if c.lower() == crop.lower():
-                match = c
+                matched_crop = c
                 break
 
-        if match is None:
+        if matched_crop is None:
             return {
-                "error": f"{crop} not supported. Allowed crops: {allowed_crops}"
+                "error": f"{crop} not supported.",
+                "allowed_crops": allowed_crops
             }
 
-        crop_encoded = crop_encoder.transform([match])[0]
-        
+        crop_encoded = crop_encoder.transform([matched_crop])[0]
+
         features = np.array([[temperature, humidity, rainfall, crop_encoded]])
 
         probabilities = risk_model.predict_proba(features)[0]
@@ -135,32 +142,26 @@ def predict_risk(
         return {
             "risk_percentage": risk_percentage,
             "predicted_disease": predicted_disease,
-            "message": f"{match} – {risk_percentage}% risk of {predicted_disease}"
+            "message": f"{matched_crop} – {risk_percentage}% risk of {predicted_disease}"
         }
 
     except Exception as e:
         return {"error": str(e)}
 
-
-# =========================
-# GET CROPS FOR RISK MODEL
-# =========================
-@app.get("/get_risk_crops")
-def get_risk_crops():
-    return {
-        "crops": crop_encoder.classes_.tolist()
-    }
-
-
-# =========================
-# GET CROPS FOR DISEASE MODEL
-# =========================
-@app.get("/get_disease_crops")
+# =====================================================
+# GET CROPS FOR AFTER INFECTION MODEL
+# =====================================================
+@app.get("/disease_crops/")
 def get_disease_crops():
     return {
         "crops": list(cure_dict.keys())
     }
-def get_crops():
+
+# =====================================================
+# GET CROPS FOR BEFORE INFECTION MODEL
+# =====================================================
+@app.get("/risk_crops/")
+def get_risk_crops():
     return {
         "crops": crop_encoder.classes_.tolist()
     }
