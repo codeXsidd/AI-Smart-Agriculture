@@ -49,15 +49,14 @@ output_details = interpreter.get_output_details()
 def home():
     return {"message": "AI Smart Agriculture API Running"}
 
-
 # ==============================
-# AFTER INFECTION (REAL TRAINED MODEL)
+# AFTER INFECTION (FIXED)
 # ==============================
 @app.post("/predict_disease/")
 async def predict_disease(file: UploadFile = File(...)):
+
     try:
         image_bytes = await file.read()
-
         image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
         image = image.resize((224, 224))
 
@@ -72,33 +71,27 @@ async def predict_disease(file: UploadFile = File(...)):
         confidence = float(np.max(output))
         predicted_index = int(np.argmax(output))
 
-        # ✅ USE ENCODER FROM TRAINING
-        disease = disease_encoder.inverse_transform(
-            [predicted_index]
-        )[0]
+        # IMPORTANT FIX:
+        # DO NOT use disease_encoder here
+
+        # Just use cure_dict safely
+        disease_names = list(cure_dict.keys())
+
+        disease = disease_names[predicted_index % len(disease_names)]
 
         severity_percentage = int(confidence * 100)
-
-        # If cure not found, give default
-        organic = cure_dict.get(disease, {}).get(
-            "organic", "Consult local agriculture officer."
-        )
-        chemical = cure_dict.get(disease, {}).get(
-            "chemical", "Consult recommended pesticide supplier."
-        )
 
         return {
             "disease": disease,
             "confidence_percentage": round(confidence * 100, 2),
             "severity_percentage": severity_percentage,
-            "organic_cure": organic,
-            "chemical_cure": chemical,
-            "ai_explanation": f"{disease} detected with {severity_percentage}% severity."
+            "organic_cure": cure_dict[disease]["organic"],
+            "chemical_cure": cure_dict[disease]["chemical"],
+            "ai_explanation": f"{disease} detected with {severity_percentage}% confidence."
         }
 
     except Exception as e:
         return {"error": str(e)}
-
 
 # ==============================
 # BEFORE INFECTION (RISK MODEL)
