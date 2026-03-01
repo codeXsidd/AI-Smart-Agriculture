@@ -18,20 +18,40 @@
 
   <div class="card">
 
-    <!-- Dynamic Crop Dropdown -->
+    <!-- Crop Dropdown -->
     <label>Select Crop</label>
-    <select id="crop">
-      <option>Loading crops...</option>
-    </select>
+    <select id="crop"></select>
 
     <br><br>
 
-    <input type="number" id="temp" placeholder="Temperature (°C)">
-    <input type="number" id="humidity" placeholder="Humidity (%)">
-    <input type="number" id="rainfall" placeholder="Rainfall (mm)">
+    <!-- Mode Toggle -->
+    <div class="mode-toggle">
+      <button onclick="setManualMode()" id="manualBtn" class="active-mode">
+        Manual
+      </button>
+      <button onclick="setAutoMode()" id="autoBtn">
+        Auto (Weather API)
+      </button>
+    </div>
 
-    <br><br>
+    <br>
 
+    <!-- MANUAL INPUTS -->
+    <div id="manualSection">
+      <input type="number" id="temp" placeholder="Temperature (°C)">
+      <input type="number" id="humidity" placeholder="Humidity (%)">
+      <input type="number" id="rainfall" placeholder="Rainfall (mm)">
+    </div>
+
+    <!-- AUTO WEATHER -->
+    <div id="autoSection" style="display:none;">
+      <input type="text" id="city" placeholder="Enter City Name">
+      <button onclick="getWeather()">Fetch Weather</button>
+
+      <p id="weatherInfo"></p>
+    </div>
+
+    <br>
     <button onclick="predictRisk()">Forecast Risk</button>
 
     <div id="riskResult"></div>
@@ -40,6 +60,5 @@
 </div>
 
 <script src="script.js"></script>
-
 </body>
 </html>
