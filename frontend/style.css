@@ -1,3 +1,6 @@
+/* =========================
+   GLOBAL
+========================= */
 * {
   margin: 0;
   padding: 0;
@@ -7,21 +10,25 @@
 
 body {
   display: flex;
-  background: #f5f7f6;
+  background: #f4f8f6;
+  min-height: 100vh;
 }
 
-/* Sidebar */
+/* =========================
+   SIDEBAR
+========================= */
 .sidebar {
   width: 240px;
-  height: 100vh;
-  background: white;
+  min-height: 100vh;
+  background: #ffffff;
   padding: 30px 20px;
-  border-right: 1px solid #e5e5e5;
+  border-right: 1px solid #e6e6e6;
+  transition: 0.3s;
 }
 
 .logo {
   font-size: 22px;
-  font-weight: bold;
+  font-weight: 700;
   color: #1f7a4c;
   margin-bottom: 40px;
 }
@@ -46,7 +53,9 @@ body {
   font-weight: 600;
 }
 
-/* Main */
+/* =========================
+   MAIN CONTENT
+========================= */
 .main {
   flex: 1;
   padding: 40px;
@@ -55,33 +64,52 @@ body {
 h1 {
   font-size: 32px;
   margin-bottom: 30px;
+  color: #333;
 }
 
-/* Card */
+/* =========================
+   CARD
+========================= */
 .card {
-  background: white;
+  background: #ffffff;
   padding: 30px;
   border-radius: 16px;
   box-shadow: 0px 10px 30px rgba(0,0,0,0.05);
   margin-bottom: 30px;
+  transition: 0.3s;
 }
 
-/* Upload */
-.upload-box {
-  border: 2px dashed #cde8d8;
-  padding: 50px;
-  text-align: center;
-  border-radius: 16px;
-  cursor: pointer;
-  margin-bottom: 20px;
+.card:hover {
+  transform: translateY(-2px);
 }
 
-/* Button */
+/* =========================
+   INPUTS
+========================= */
+input, select {
+  width: 100%;
+  padding: 12px 14px;
+  margin-bottom: 15px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+  outline: none;
+  transition: 0.2s;
+}
+
+input:focus, select:focus {
+  border-color: #1f7a4c;
+  box-shadow: 0 0 0 3px rgba(31,122,76,0.1);
+}
+
+/* =========================
+   BUTTON
+========================= */
 button {
   background: #1f7a4c;
   color: white;
   border: none;
-  padding: 14px 22px;
+  padding: 12px 20px;
   border-radius: 10px;
   cursor: pointer;
   font-weight: 600;
@@ -90,17 +118,67 @@ button {
 
 button:hover {
   background: #17633d;
+  transform: translateY(-2px);
 }
 
-/* Result Card */
+/* =========================
+   MODE TOGGLE
+========================= */
+.mode-toggle {
+  display: flex;
+  gap: 10px;
+}
+
+.mode-toggle button {
+  flex: 1;
+  background: #e6f5ec;
+  color: #1f7a4c;
+}
+
+.active-mode {
+  background-color: #1f7a4c !important;
+  color: white !important;
+}
+
+/* =========================
+   UPLOAD BOX
+========================= */
+.upload-box {
+  border: 2px dashed #4CAF50;
+  padding: 40px;
+  text-align: center;
+  border-radius: 16px;
+  margin-bottom: 20px;
+  background-color: #f9fff9;
+  transition: 0.3s;
+}
+
+.upload-box:hover {
+  background-color: #f0fff5;
+}
+
+.preview-container {
+  margin-top: 20px;
+}
+
+.preview-container img {
+  max-width: 300px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+}
+
+/* =========================
+   RESULT CARD
+========================= */
 .result-card {
   margin-top: 30px;
-  padding: 30px;
-  border-radius: 20px;
+  padding: 25px;
+  border-radius: 18px;
   color: white;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  animation: fadeIn 0.4s ease-in-out;
 }
 
 .low {
@@ -111,74 +189,78 @@ button:hover {
   background: linear-gradient(135deg, #d63031, #ff7675);
 }
 
-/* Circular Progress */
+/* =========================
+   PROGRESS CIRCLE
+========================= */
 .progress-circle {
-  width: 140px;
-  height: 140px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
-  background: conic-gradient(#ffffff 0%, rgba(255,255,255,0.2) 0%);
+  background: conic-gradient(
+    rgba(255,255,255,0.9) var(--percent),
+    rgba(255,255,255,0.2) var(--percent)
+  );
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 26px;
+  font-size: 22px;
   font-weight: bold;
 }
 
-.progress-container {
-  position: relative;
-  width: 150px;
-  height: 150px;
-}
-
-.progress-text {
-  position: absolute;
-  top: 55px;
-  left: 50px;
-  font-size: 20px;
-  font-weight: bold;
-}
-.mode-toggle {
-  display: flex;
-  gap: 10px;
-}
-
-.mode-toggle button {
-  padding: 8px 15px;
-  border: none;
-  cursor: pointer;
-  border-radius: 5px;
-}
-
-.active-mode {
-  background-color: #28a745;
-  color: white;
-}
-
-
-.upload-box {
-  border: 2px dashed #4CAF50;
-  padding: 30px;
-  text-align: center;
-  border-radius: 12px;
-  margin-bottom: 20px;
-  background-color: #f9fff9;
-}
-
-.preview-container {
-  margin-top: 20px;
-}
-
-.preview-container img {
-  max-width: 300px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
-
+/* =========================
+   HISTORY
+========================= */
 .history-card {
   background: #ffffff;
-  padding: 15px;
+  padding: 20px;
   margin-top: 15px;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-radius: 14px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
   color: #333;
+  transition: 0.3s;
+}
+
+.history-card:hover {
+  transform: translateY(-3px);
+}
+
+/* =========================
+   ANIMATIONS
+========================= */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* =========================
+   RESPONSIVE DESIGN
+========================= */
+@media (max-width: 768px) {
+
+  body {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    display: flex;
+    justify-content: space-around;
+    border-right: none;
+    border-bottom: 1px solid #e6e6e6;
+  }
+
+  .main {
+    padding: 20px;
+  }
+
+  .result-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 15px;
+  }
+
+  .progress-circle {
+    margin-bottom: 10px;
+  }
 }
