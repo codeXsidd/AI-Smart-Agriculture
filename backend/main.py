@@ -9,9 +9,6 @@ import io
 import os
 from cure_dict import cure_dict
 
-# ==============================
-# Create App
-# ==============================
 app = FastAPI()
 
 app.add_middleware(
@@ -22,13 +19,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ==============================
-# Get Base Directory
-# ==============================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # ==============================
-# Load Risk Model (model1 folder)
+# LOAD MODELS
 # ==============================
 risk_model = pickle.load(
     open(os.path.join(BASE_DIR, "model2", "disease_risk_model.pkl"), "rb")
@@ -42,9 +36,6 @@ disease_encoder = pickle.load(
     open(os.path.join(BASE_DIR, "model2", "disease_encoder.pkl"), "rb")
 )
 
-# ==============================
-# Load TFLite Disease Model (model2 folder)
-# ==============================
 interpreter = tf.lite.Interpreter(
     model_path=os.path.join(BASE_DIR, "model1", "smart_agri_model_quant.tflite")
 )
@@ -53,15 +44,14 @@ interpreter.allocate_tensors()
 input_details = interpreter.get_input_details()
 output_details = interpreter.get_output_details()
 
-# ==============================
-# Root Route
-# ==============================
+
 @app.get("/")
 def home():
     return {"message": "AI Smart Agriculture API Running"}
 
+
 # ==============================
-# Disease Detection (After Infection)
+# AFTER INFECTION (REAL TRAINED MODEL)
 # ==============================
 @app.post("/predict_disease/")
 async def predict_disease(file: UploadFile = File(...)):
@@ -82,28 +72,36 @@ async def predict_disease(file: UploadFile = File(...)):
         confidence = float(np.max(output))
         predicted_index = int(np.argmax(output))
 
-        disease_names = list(cure_dict.keys())
+        # ✅ USE ENCODER FROM TRAINING
+        disease = disease_encoder.inverse_transform(
+            [predicted_index]
+        )[0]
 
-        if predicted_index >= len(disease_names):
-            return {"error": "Model output mismatch"}
-
-        disease = disease_names[predicted_index]
         severity_percentage = int(confidence * 100)
+
+        # If cure not found, give default
+        organic = cure_dict.get(disease, {}).get(
+            "organic", "Consult local agriculture officer."
+        )
+        chemical = cure_dict.get(disease, {}).get(
+            "chemical", "Consult recommended pesticide supplier."
+        )
 
         return {
             "disease": disease,
             "confidence_percentage": round(confidence * 100, 2),
             "severity_percentage": severity_percentage,
-            "organic_cure": cure_dict[disease]["organic"],
-            "chemical_cure": cure_dict[disease]["chemical"],
+            "organic_cure": organic,
+            "chemical_cure": chemical,
             "ai_explanation": f"{disease} detected with {severity_percentage}% severity."
         }
 
     except Exception as e:
         return {"error": str(e)}
 
+
 # ==============================
-# Risk Prediction (Before Infection)
+# BEFORE INFECTION (RISK MODEL)
 # ==============================
 @app.post("/predict_risk/")
 def predict_risk(
@@ -116,11 +114,10 @@ def predict_risk(
         crop = crop.lower()
 
         if crop not in crop_encoder.classes_:
-            return {"error": f"{crop} not supported"}
+            return {"error": f"{crop} not supported by trained model"}
 
         crop_encoded = crop_encoder.transform([crop])[0]
 
-        # IMPORTANT: Correct feature order
         features = np.array([[crop_encoded, temperature, humidity, rainfall]])
 
         probabilities = risk_model.predict_proba(features)[0]
@@ -139,8 +136,6 @@ def predict_risk(
     except Exception as e:
         return {"error": str(e)}
 
-# ==============================
-# Local Run
-# ==============================
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=10000)
