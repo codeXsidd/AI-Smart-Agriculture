@@ -113,16 +113,44 @@ async function predictRisk() {
     }
 
     document.getElementById("riskResult").innerHTML = `
-      <div class="result-card ${data.risk_percentage > 60 ? "high" : "low"}">
-        <div class="progress-circle">${data.risk_percentage}%</div>
-        <div>
-          <h2>${data.predicted_disease}</h2>
-          <p>${data.message}</p>
-        </div>
-      </div>
-    `;
+  <div class="result-card">
+    <div class="progress-container">
+      <svg width="150" height="150">
+        <circle cx="75" cy="75" r="60" stroke="#eee" stroke-width="12" fill="none"/>
+        <circle id="progressCircle"
+          cx="75" cy="75" r="60"
+          stroke="${data.risk_percentage > 60 ? "#ff4d4d" : "#28a745"}"
+          stroke-width="12"
+          fill="none"
+          stroke-dasharray="377"
+          stroke-dashoffset="377"
+          transform="rotate(-90 75 75)"
+        />
+      </svg>
+      <div class="progress-text">${data.risk_percentage}%</div>
+    </div>
 
+    <div>
+      <h2>${data.predicted_disease}</h2>
+      <p>${data.message}</p>
+    </div>
+  </div>
+`;
+
+animateCircle(data.risk_percentage);
+saveToHistory("Risk", data);
+   
   } catch (error) {
     alert("Server Error");
   }
+}
+
+
+function animateCircle(percent) {
+  const circle = document.getElementById("progressCircle");
+  const radius = 60;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (percent / 100) * circumference;
+
+  circle.style.strokeDashoffset = offset;
 }
