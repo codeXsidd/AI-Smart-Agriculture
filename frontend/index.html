@@ -22,15 +22,14 @@
     <label>Upload Leaf Image</label>
     <div class="upload-box">
       <input type="file" id="imageInput" accept="image/*" onchange="previewImage(event)">
-      
       <div class="preview-container">
-        <img id="imagePreview" src="" alt="Image Preview" style="display:none;">
+        <img id="imagePreview" style="display:none;">
       </div>
     </div>
 
     <br>
 
-    <!-- Dynamic Crop Dropdown -->
+    <!-- Crop Dropdown -->
     <label>Select Crop</label>
     <select id="crop">
       <option>Loading crops...</option>
@@ -46,6 +45,5 @@
 </div>
 
 <script src="script.js"></script>
-
 </body>
 </html>
