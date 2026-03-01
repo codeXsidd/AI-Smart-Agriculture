@@ -69,7 +69,7 @@ async function predictDisease() {
         </div>
       </div>
     `;
-
+    saveToHistory("Disease", data);
   } catch (error) {
     alert("Server Error");
   }
@@ -153,4 +153,17 @@ function animateCircle(percent) {
   const offset = circumference - (percent / 100) * circumference;
 
   circle.style.strokeDashoffset = offset;
+}
+
+
+function saveToHistory(type, data) {
+  let history = JSON.parse(localStorage.getItem("agriHistory")) || [];
+
+  history.push({
+    type: type,
+    date: new Date().toLocaleString(),
+    result: data
+  });
+
+  localStorage.setItem("agriHistory", JSON.stringify(history));
 }
