@@ -1,29 +1,18 @@
 const API = "https://ai-smart-agriculture.onrender.com";
 
 /* =================================================
-   LOAD CROPS BASED ON PAGE
+   LOAD CROPS (ONLY ONE METHOD)
 ================================================= */
 
 window.addEventListener("DOMContentLoaded", loadCrops);
 
 async function loadCrops() {
-
-  const cropSelect = document.getElementById("crop");
-  if (!cropSelect) return;
-
-  let endpoint = "";
-
-  // Detect page automatically
-  if (window.location.pathname.includes("index.html")) {
-    endpoint = "/get_disease_crops";
-  } 
-  else if (window.location.pathname.includes("before.html")) {
-    endpoint = "/get_risk_crops";
-  }
-
   try {
-    const response = await fetch(`${API}${endpoint}`);
+    const response = await fetch(`${API}/get_crops`);
     const data = await response.json();
+
+    const cropSelect = document.getElementById("crop");
+    if (!cropSelect) return;
 
     cropSelect.innerHTML = "";
 
@@ -35,59 +24,12 @@ async function loadCrops() {
     });
 
   } catch (error) {
-    cropSelect.innerHTML = "<option>Error loading crops</option>";
+    console.error("Failed to load crops:", error);
+    const cropSelect = document.getElementById("crop");
+    if (cropSelect) {
+      cropSelect.innerHTML = "<option>Error loading crops</option>";
+    }
   }
-}
-
-/* =================================================
-   LOAD DISEASE MODEL CROPS (After Infection)
-================================================= */
-
-async function loadDiseaseCrops() {
-  try {
-    const response = await fetch(`${API}/disease_crops/`);
-    const data = await response.json();
-
-    populateDropdown(data.crops);
-
-  } catch (error) {
-    console.error("Error loading disease crops");
-  }
-}
-
-/* =================================================
-   LOAD RISK MODEL CROPS (Before Infection)
-================================================= */
-
-async function loadRiskCrops() {
-  try {
-    const response = await fetch(`${API}/risk_crops/`);
-    const data = await response.json();
-
-    populateDropdown(data.crops);
-
-  } catch (error) {
-    console.error("Error loading risk crops");
-  }
-}
-
-/* =================================================
-   COMMON DROPDOWN POPULATOR
-================================================= */
-
-function populateDropdown(crops) {
-
-  const cropSelect = document.getElementById("crop");
-  if (!cropSelect) return;
-
-  cropSelect.innerHTML = "";
-
-  crops.forEach(crop => {
-    const option = document.createElement("option");
-    option.value = crop;
-    option.textContent = crop;
-    cropSelect.appendChild(option);
-  });
 }
 
 /* =================================================
@@ -130,18 +72,16 @@ function setAutoMode() {
 
   document.getElementById("manualBtn").classList.remove("active-mode");
   document.getElementById("autoBtn").classList.add("active-mode");
-
-  getCurrentLocationWeather(); // Auto trigger
 }
 
 /* =================================================
-   WEATHER FROM CURRENT LOCATION
+   WEATHER API
 ================================================= */
 
 async function getCurrentLocationWeather() {
 
   if (!navigator.geolocation) {
-    alert("Geolocation not supported");
+    alert("Geolocation not supported by browser");
     return;
   }
 
@@ -152,7 +92,7 @@ async function getCurrentLocationWeather() {
     const lat = position.coords.latitude;
     const lon = position.coords.longitude;
 
-    const API_KEY = "ae5bb22c76691a235ade9aabecf3d0db";
+    const API_KEY = "ae5bb22c76691a235ade9aabecf3d0db"; // Replace properly
 
     try {
       const response = await fetch(
@@ -165,6 +105,7 @@ async function getCurrentLocationWeather() {
       const humidity = data.main.humidity;
       const rainfall = data.rain ? (data.rain["1h"] || 0) : 0;
 
+      // Fill manual fields
       document.getElementById("temp").value = temp;
       document.getElementById("humidity").value = humidity;
       document.getElementById("rainfall").value = rainfall;
@@ -173,15 +114,14 @@ async function getCurrentLocationWeather() {
         `Location: ${data.name}<br>
          Temp: ${temp}°C | Humidity: ${humidity}% | Rainfall: ${rainfall}mm`;
 
-    } catch {
+    } catch (error) {
       alert("Weather API error");
     }
 
-  }, function() {
+  }, function(error) {
     alert("Location permission denied");
   });
 }
-
 /* =================================================
    AFTER INFECTION (Disease Detection)
 ================================================= */
@@ -199,6 +139,7 @@ async function predictDisease() {
 
   const formData = new FormData();
   formData.append("file", fileInput.files[0]);
+  formData.append("crop", document.getElementById("crop").value);
 
   try {
     const response = await fetch(`${API}/predict_disease/`, {
@@ -287,21 +228,8 @@ async function predictRisk() {
 }
 
 /* =================================================
-   LOCAL STORAGE HISTORY
+   LOCAL STORAGE
 ================================================= */
-
-function saveToHistory(type, data) {
-
-  let history = JSON.parse(localStorage.getItem("agriHistory")) || [];
-
-  history.push({
-    type: type,
-    date: new Date().toLocaleString(),
-    result: data
-  });
-
-  localStorage.setItem("agriHistory", JSON.stringify(history));
-}
 
 function loadHistory() {
 
@@ -317,7 +245,7 @@ function loadHistory() {
 
   container.innerHTML = "";
 
-  history.reverse().forEach(item => {
+  history.forEach(item => {
 
     let resultHTML = "";
 
@@ -335,13 +263,15 @@ function loadHistory() {
       `;
     }
 
-    container.innerHTML += `
+    const historyCard = `
       <div class="history-card">
         <h3>${item.type}</h3>
         <p><b>Date:</b> ${item.date}</p>
         ${resultHTML}
       </div>
     `;
+
+    container.innerHTML += historyCard;
   });
 }
 
