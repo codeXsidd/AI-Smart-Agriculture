@@ -17,28 +17,35 @@
   <h1>Disease Diagnosis</h1>
 
   <div class="card">
+
+    <!-- Image Upload -->
+    <label>Upload Leaf Image</label>
     <div class="upload-box">
-      <input type="file" id="imageInput">
+      <input type="file" id="imageInput" accept="image/*" onchange="previewImage(event)">
+      
+      <div class="preview-container">
+        <img id="imagePreview" src="" alt="Image Preview" style="display:none;">
+      </div>
     </div>
 
-    <select id="plantSelect">
-      <option>Tomato</option>
-      <option>Potato</option>
-      <option>Sugarcane</option>
-      <option>Rice</option>
-      <option>Wheat</option>
-      <option>Apple</option>
-      <option>Grapes</option>
-      <option>Cotton</option>
+    <br>
+
+    <!-- Dynamic Crop Dropdown -->
+    <label>Select Crop</label>
+    <select id="crop">
+      <option>Loading crops...</option>
     </select>
 
     <br><br>
+
     <button onclick="predictDisease()">Analyze Plant Health</button>
 
     <div id="diseaseResult"></div>
+
   </div>
 </div>
 
 <script src="script.js"></script>
+
 </body>
 </html>
