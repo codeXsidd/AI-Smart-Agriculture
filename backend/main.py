@@ -121,8 +121,8 @@ def predict_risk(
             }
 
         crop_encoded = crop_encoder.transform([match])[0]
-
-       features = np.array([[temperature, humidity, rainfall, crop_encoded]])
+        
+        features = np.array([[temperature, humidity, rainfall, crop_encoded]])
 
         probabilities = risk_model.predict_proba(features)[0]
 
