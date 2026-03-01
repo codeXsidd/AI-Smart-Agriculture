@@ -142,10 +142,7 @@ def predict_risk(
         return {"error": str(e)}
 
 
-# =========================
-@app.get("/supported_crops/")
-def supported_crops():
-    return {"crops": crop_encoder.classes_.tolist()}
+# ========================
 
 
 @app.get("/get_crops")
