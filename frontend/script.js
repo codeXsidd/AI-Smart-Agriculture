@@ -1,8 +1,8 @@
 const API = "https://ai-smart-agriculture.onrender.com";
 
-/* ========================================
-   AUTO LOAD BASED ON PAGE NAME
-======================================== */
+/* ===========================================
+   PAGE AUTO DETECTION
+=========================================== */
 
 window.addEventListener("DOMContentLoaded", () => {
 
@@ -22,9 +22,35 @@ window.addEventListener("DOMContentLoaded", () => {
 
 });
 
-/* ========================================
-   LOAD CROPS FOR AFTER INFECTION
-======================================== */
+/* ===========================================
+   GENERIC FETCH WITH RETRY (IMPORTANT FIX)
+=========================================== */
+
+async function fetchWithRetry(url, retries = 3, delay = 3000) {
+
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error("Server not ready");
+      }
+
+      return await response.json();
+
+    } catch (error) {
+
+      if (i === retries - 1) throw error;
+
+      console.log("Retrying API call...");
+      await new Promise(res => setTimeout(res, delay));
+    }
+  }
+}
+
+/* ===========================================
+   LOAD DISEASE CROPS
+=========================================== */
 
 async function loadDiseaseCrops() {
 
@@ -35,8 +61,7 @@ async function loadDiseaseCrops() {
 
   try {
 
-    const response = await fetch(API + "/disease_crops/");
-    const data = await response.json();
+    const data = await fetchWithRetry(API + "/disease_crops/");
 
     cropSelect.innerHTML = "";
 
@@ -48,13 +73,14 @@ async function loadDiseaseCrops() {
     });
 
   } catch (error) {
-    cropSelect.innerHTML = "<option>Server not responding</option>";
+    cropSelect.innerHTML = "<option>Backend Sleeping... Refresh</option>";
+    console.error("Disease crop load error:", error);
   }
 }
 
-/* ========================================
-   LOAD CROPS FOR BEFORE INFECTION
-======================================== */
+/* ===========================================
+   LOAD RISK CROPS
+=========================================== */
 
 async function loadRiskCrops() {
 
@@ -65,8 +91,7 @@ async function loadRiskCrops() {
 
   try {
 
-    const response = await fetch(API + "/risk_crops/");
-    const data = await response.json();
+    const data = await fetchWithRetry(API + "/risk_crops/");
 
     cropSelect.innerHTML = "";
 
@@ -78,13 +103,14 @@ async function loadRiskCrops() {
     });
 
   } catch (error) {
-    cropSelect.innerHTML = "<option>Server not responding</option>";
+    cropSelect.innerHTML = "<option>Backend Sleeping... Refresh</option>";
+    console.error("Risk crop load error:", error);
   }
 }
 
-/* ========================================
+/* ===========================================
    IMAGE PREVIEW
-======================================== */
+=========================================== */
 
 function previewImage(event) {
 
@@ -101,9 +127,9 @@ function previewImage(event) {
   reader.readAsDataURL(file);
 }
 
-/* ========================================
-   AFTER INFECTION PREDICTION
-======================================== */
+/* ===========================================
+   AFTER INFECTION
+=========================================== */
 
 async function predictDisease() {
 
@@ -141,16 +167,14 @@ async function predictDisease() {
       </div>
     `;
 
-    saveToHistory("Disease Detection", data);
-
-  } catch {
+  } catch (error) {
     document.getElementById("diseaseResult").innerHTML = "Server Error";
   }
 }
 
-/* ========================================
-   BEFORE INFECTION PREDICTION
-======================================== */
+/* ===========================================
+   BEFORE INFECTION
+=========================================== */
 
 async function predictRisk() {
 
@@ -193,73 +217,7 @@ async function predictRisk() {
       </div>
     `;
 
-    saveToHistory("Risk Prediction", data);
-
-  } catch {
+  } catch (error) {
     document.getElementById("riskResult").innerHTML = "Server Error";
   }
-}
-
-/* ========================================
-   LOCAL STORAGE HISTORY
-======================================== */
-
-function saveToHistory(type, data) {
-
-  let history = JSON.parse(localStorage.getItem("agriHistory")) || [];
-
-  history.push({
-    type,
-    date: new Date().toLocaleString(),
-    result: data
-  });
-
-  localStorage.setItem("agriHistory", JSON.stringify(history));
-}
-
-function loadHistory() {
-
-  const container = document.getElementById("historyContainer");
-  if (!container) return;
-
-  let history = JSON.parse(localStorage.getItem("agriHistory")) || [];
-
-  if (history.length === 0) {
-    container.innerHTML = "<p>No prediction history available.</p>";
-    return;
-  }
-
-  container.innerHTML = "";
-
-  history.reverse().forEach(item => {
-
-    let content = "";
-
-    if (item.type === "Disease Detection") {
-      content = `
-        <p><b>Disease:</b> ${item.result.disease}</p>
-        <p><b>Confidence:</b> ${item.result.confidence_percentage}%</p>
-      `;
-    }
-
-    if (item.type === "Risk Prediction") {
-      content = `
-        <p><b>Prediction:</b> ${item.result.predicted_disease}</p>
-        <p><b>Risk %:</b> ${item.result.risk_percentage}%</p>
-      `;
-    }
-
-    container.innerHTML += `
-      <div class="history-card">
-        <h3>${item.type}</h3>
-        <p>${item.date}</p>
-        ${content}
-      </div>
-    `;
-  });
-}
-
-function clearHistory() {
-  localStorage.removeItem("agriHistory");
-  loadHistory();
 }
