@@ -137,3 +137,19 @@ button:hover {
   font-size: 20px;
   font-weight: bold;
 }
+.mode-toggle {
+  display: flex;
+  gap: 10px;
+}
+
+.mode-toggle button {
+  padding: 8px 15px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.active-mode {
+  background-color: #28a745;
+  color: white;
+}
