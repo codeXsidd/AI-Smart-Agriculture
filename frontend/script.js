@@ -1,36 +1,41 @@
 const API = "https://ai-smart-agriculture.onrender.com";
 
-/* =================================================
-   LOAD CROPS BASED ON PAGE
-================================================= */
+/* ========================================
+   AUTO LOAD BASED ON PAGE NAME
+======================================== */
 
-window.addEventListener("DOMContentLoaded", function () {
+window.addEventListener("DOMContentLoaded", () => {
 
-  if (document.getElementById("imageInput")) {
-    loadDiseaseCrops();   // index.html
+  const path = window.location.pathname;
+
+  if (path.includes("index.html")) {
+    loadDiseaseCrops();
   }
 
-  if (document.getElementById("manualSection")) {
-    loadRiskCrops();      // before.html
+  if (path.includes("before.html")) {
+    loadRiskCrops();
   }
 
-  if (document.getElementById("historyContainer")) {
-    loadHistory();        // history.html
+  if (path.includes("history.html")) {
+    loadHistory();
   }
 
 });
 
-/* =================================================
-   LOAD DISEASE MODEL CROPS (After Infection)
-================================================= */
+/* ========================================
+   LOAD CROPS FOR AFTER INFECTION
+======================================== */
 
 async function loadDiseaseCrops() {
 
   const cropSelect = document.getElementById("crop");
   if (!cropSelect) return;
 
+  cropSelect.innerHTML = "<option>Loading crops...</option>";
+
   try {
-    const response = await fetch(`${API}/disease_crops/`);
+
+    const response = await fetch(API + "/disease_crops/");
     const data = await response.json();
 
     cropSelect.innerHTML = "";
@@ -42,22 +47,25 @@ async function loadDiseaseCrops() {
       cropSelect.appendChild(option);
     });
 
-  } catch {
-    cropSelect.innerHTML = "<option>Error loading crops</option>";
+  } catch (error) {
+    cropSelect.innerHTML = "<option>Server not responding</option>";
   }
 }
 
-/* =================================================
-   LOAD RISK MODEL CROPS (Before Infection)
-================================================= */
+/* ========================================
+   LOAD CROPS FOR BEFORE INFECTION
+======================================== */
 
 async function loadRiskCrops() {
 
   const cropSelect = document.getElementById("crop");
   if (!cropSelect) return;
 
+  cropSelect.innerHTML = "<option>Loading crops...</option>";
+
   try {
-    const response = await fetch(`${API}/risk_crops/`);
+
+    const response = await fetch(API + "/risk_crops/");
     const data = await response.json();
 
     cropSelect.innerHTML = "";
@@ -69,38 +77,39 @@ async function loadRiskCrops() {
       cropSelect.appendChild(option);
     });
 
-  } catch {
-    cropSelect.innerHTML = "<option>Error loading crops</option>";
+  } catch (error) {
+    cropSelect.innerHTML = "<option>Server not responding</option>";
   }
 }
 
-/* =================================================
+/* ========================================
    IMAGE PREVIEW
-================================================= */
+======================================== */
 
 function previewImage(event) {
+
   const file = event.target.files[0];
   const preview = document.getElementById("imagePreview");
 
-  if (file && preview) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      preview.src = e.target.result;
-      preview.style.display = "block";
-    };
-    reader.readAsDataURL(file);
-  }
+  if (!file || !preview) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    preview.src = e.target.result;
+    preview.style.display = "block";
+  };
+  reader.readAsDataURL(file);
 }
 
-/* =================================================
-   AFTER INFECTION (Disease Detection)
-================================================= */
+/* ========================================
+   AFTER INFECTION PREDICTION
+======================================== */
 
 async function predictDisease() {
 
   const fileInput = document.getElementById("imageInput");
 
-  if (!fileInput || !fileInput.files.length) {
+  if (!fileInput.files.length) {
     alert("Upload image first");
     return;
   }
@@ -112,7 +121,7 @@ async function predictDisease() {
 
   try {
 
-    const response = await fetch(`${API}/predict_disease/`, {
+    const response = await fetch(API + "/predict_disease/", {
       method: "POST",
       body: formData
     });
@@ -120,13 +129,12 @@ async function predictDisease() {
     const data = await response.json();
 
     if (data.error) {
-      document.getElementById("diseaseResult").innerHTML =
-        `<div class="result-card high">${data.error}</div>`;
+      document.getElementById("diseaseResult").innerHTML = data.error;
       return;
     }
 
     document.getElementById("diseaseResult").innerHTML = `
-      <div class="result-card ${data.severity_percentage > 60 ? "high" : "low"}">
+      <div class="result-card">
         <h2>${data.disease}</h2>
         <p><b>Confidence:</b> ${data.confidence_percentage}%</p>
         <p>${data.ai_explanation}</p>
@@ -136,23 +144,23 @@ async function predictDisease() {
     saveToHistory("Disease Detection", data);
 
   } catch {
-    alert("Server Error");
+    document.getElementById("diseaseResult").innerHTML = "Server Error";
   }
 }
 
-/* =================================================
-   BEFORE INFECTION (Risk Prediction)
-================================================= */
+/* ========================================
+   BEFORE INFECTION PREDICTION
+======================================== */
 
 async function predictRisk() {
 
   const crop = document.getElementById("crop").value;
-  const temperature = document.getElementById("temp").value;
+  const temp = document.getElementById("temp").value;
   const humidity = document.getElementById("humidity").value;
   const rainfall = document.getElementById("rainfall").value;
 
-  if (!temperature || !humidity || !rainfall) {
-    alert("Provide weather data");
+  if (!temp || !humidity || !rainfall) {
+    alert("Enter weather values");
     return;
   }
 
@@ -160,13 +168,13 @@ async function predictRisk() {
 
   const formData = new FormData();
   formData.append("crop", crop);
-  formData.append("temperature", temperature);
+  formData.append("temperature", temp);
   formData.append("humidity", humidity);
   formData.append("rainfall", rainfall);
 
   try {
 
-    const response = await fetch(`${API}/predict_risk/`, {
+    const response = await fetch(API + "/predict_risk/", {
       method: "POST",
       body: formData
     });
@@ -174,13 +182,12 @@ async function predictRisk() {
     const data = await response.json();
 
     if (data.error) {
-      document.getElementById("riskResult").innerHTML =
-        `<div class="result-card high">${data.error}</div>`;
+      document.getElementById("riskResult").innerHTML = data.error;
       return;
     }
 
     document.getElementById("riskResult").innerHTML = `
-      <div class="result-card ${data.risk_percentage > 60 ? "high" : "low"}">
+      <div class="result-card">
         <h2>${data.predicted_disease}</h2>
         <p>${data.message}</p>
       </div>
@@ -189,13 +196,13 @@ async function predictRisk() {
     saveToHistory("Risk Prediction", data);
 
   } catch {
-    alert("Server Error");
+    document.getElementById("riskResult").innerHTML = "Server Error";
   }
 }
 
-/* =================================================
+/* ========================================
    LOCAL STORAGE HISTORY
-================================================= */
+======================================== */
 
 function saveToHistory(type, data) {
 
@@ -226,17 +233,17 @@ function loadHistory() {
 
   history.reverse().forEach(item => {
 
-    let resultHTML = "";
+    let content = "";
 
     if (item.type === "Disease Detection") {
-      resultHTML = `
+      content = `
         <p><b>Disease:</b> ${item.result.disease}</p>
         <p><b>Confidence:</b> ${item.result.confidence_percentage}%</p>
       `;
     }
 
     if (item.type === "Risk Prediction") {
-      resultHTML = `
+      content = `
         <p><b>Prediction:</b> ${item.result.predicted_disease}</p>
         <p><b>Risk %:</b> ${item.result.risk_percentage}%</p>
       `;
@@ -245,8 +252,8 @@ function loadHistory() {
     container.innerHTML += `
       <div class="history-card">
         <h3>${item.type}</h3>
-        <p><b>Date:</b> ${item.date}</p>
-        ${resultHTML}
+        <p>${item.date}</p>
+        ${content}
       </div>
     `;
   });
