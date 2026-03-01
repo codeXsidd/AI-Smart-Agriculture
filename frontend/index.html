@@ -2,6 +2,8 @@
 <html>
 <head>
   <title>AgriVision - After Infection</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -21,15 +23,25 @@
     <!-- Image Upload -->
     <label>Upload Leaf Image</label>
     <div class="upload-box">
-      <input type="file" id="imageInput" accept="image/*" onchange="previewImage(event)">
+      <input 
+        type="file" 
+        id="imageInput" 
+        accept="image/*" 
+        onchange="previewImage(event)"
+      >
+      
       <div class="preview-container">
-        <img id="imagePreview" style="display:none;">
+        <img 
+          id="imagePreview" 
+          alt="Leaf Preview"
+          style="display:none; max-width:200px; margin-top:10px;"
+        >
       </div>
     </div>
 
     <br>
 
-    <!-- Crop Dropdown -->
+    <!-- Dynamic Crop Dropdown (Loaded from /disease_crops/) -->
     <label>Select Crop</label>
     <select id="crop">
       <option>Loading crops...</option>
@@ -37,7 +49,11 @@
 
     <br><br>
 
-    <button onclick="predictDisease()">Analyze Plant Health</button>
+    <button onclick="predictDisease()">
+      Analyze Plant Health
+    </button>
+
+    <br><br>
 
     <div id="diseaseResult"></div>
 
@@ -45,5 +61,6 @@
 </div>
 
 <script src="script.js"></script>
+
 </body>
 </html>
