@@ -17,25 +17,29 @@
   <h1>Early Risk Prediction</h1>
 
   <div class="card">
+
+    <!-- Dynamic Crop Dropdown -->
+    <label>Select Crop</label>
     <select id="crop">
-<option value="Potato">Potato</option>
-  <option value="Rice">Rice</option>
-  <option value="Tomato">Tomato</option>
-  <option value="Wheat">Wheat</option>
+      <option>Loading crops...</option>
     </select>
 
     <br><br>
-    <input type="number" id="temp" placeholder="Temperature">
-    <input type="number" id="humidity" placeholder="Humidity">
-    <input type="number" id="rainfall" placeholder="Rainfall">
+
+    <input type="number" id="temp" placeholder="Temperature (°C)">
+    <input type="number" id="humidity" placeholder="Humidity (%)">
+    <input type="number" id="rainfall" placeholder="Rainfall (mm)">
 
     <br><br>
+
     <button onclick="predictRisk()">Forecast Risk</button>
 
     <div id="riskResult"></div>
+
   </div>
 </div>
 
 <script src="script.js"></script>
+
 </body>
 </html>
