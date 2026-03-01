@@ -1,5 +1,24 @@
 const API = "https://ai-smart-agriculture.onrender.com";
 
+window.onload = async function() {
+  const response = await fetch(`${API}/supported_crops/`);
+  const data = await response.json();
+
+  const cropSelect = document.getElementById("crop");
+  cropSelect.innerHTML = "";
+
+  data.crops.forEach(crop => {
+    const option = document.createElement("option");
+    option.value = crop;
+    option.textContent = crop;
+    cropSelect.appendChild(option);
+  });
+};
+
+// ================================
+// After Infection (Disease Detection)
+// ================================
+
 async function predictDisease() {
 
   const file = document.getElementById("imageInput").files[0];
@@ -49,6 +68,10 @@ async function predictDisease() {
     alert("Server Error");
   }
 }
+
+// ================================
+//Before Infection 
+// ================================
 
 async function predictRisk() {
 
