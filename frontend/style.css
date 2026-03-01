@@ -155,18 +155,21 @@ button:hover {
 }
 
 
-function previewImage(event) {
-  const file = event.target.files[0];
-  const preview = document.getElementById("imagePreview");
+.upload-box {
+  border: 2px dashed #4CAF50;
+  padding: 30px;
+  text-align: center;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  background-color: #f9fff9;
+}
 
-  if (file) {
-    const reader = new FileReader();
+.preview-container {
+  margin-top: 20px;
+}
 
-    reader.onload = function(e) {
-      preview.src = e.target.result;
-      preview.style.display = "block";
-    };
-
-    reader.readAsDataURL(file);
-  }
+.preview-container img {
+  max-width: 300px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
