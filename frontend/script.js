@@ -134,7 +134,7 @@ async function getCurrentLocationWeather() {
     const lat = position.coords.latitude;
     const lon = position.coords.longitude;
 
-    const API_KEY = "YOUR_OPENWEATHER_API_KEY";
+    const API_KEY = "ae5bb22c76691a235ade9aabecf3d0db";
 
     try {
       const response = await fetch(
