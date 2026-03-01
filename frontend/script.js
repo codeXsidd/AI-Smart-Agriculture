@@ -1,5 +1,58 @@
 const API = "https://ai-smart-agriculture.onrender.com";
 
+
+let currentMode = "manual";
+function setManualMode() {
+  currentMode = "manual";
+  document.getElementById("manualSection").style.display = "block";
+  document.getElementById("autoSection").style.display = "none";
+
+  document.getElementById("manualBtn").classList.add("active-mode");
+  document.getElementById("autoBtn").classList.remove("active-mode");
+}
+
+function setAutoMode() {
+  currentMode = "auto";
+  document.getElementById("manualSection").style.display = "none";
+  document.getElementById("autoSection").style.display = "block";
+
+  document.getElementById("manualBtn").classList.remove("active-mode");
+  document.getElementById("autoBtn").classList.add("active-mode");
+}
+
+async function getWeather() {
+  const city = document.getElementById("city").value;
+  const API_KEY = "ae5bb22c76691a235ade9aabecf3d0db";
+
+  try {
+    const response = await fetch(
+      `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`
+    );
+    const data = await response.json();
+
+    if (data.cod !== 200) {
+      alert("City not found");
+      return;
+    }
+
+    const temp = data.main.temp;
+    const humidity = data.main.humidity;
+    const rainfall = data.rain ? data.rain["1h"] || 0 : 0;
+
+    // Auto fill hidden manual inputs
+    document.getElementById("temp").value = temp;
+    document.getElementById("humidity").value = humidity;
+    document.getElementById("rainfall").value = rainfall;
+
+    document.getElementById("weatherInfo").innerHTML =
+      `Temp: ${temp}°C | Humidity: ${humidity}% | Rainfall: ${rainfall}mm`;
+
+  } catch {
+    alert("Weather API Error");
+  }
+}
+
+
  window.onload = async function () {
     try {
       const response = await fetch(`${API}/supported_crops/`);
@@ -82,9 +135,17 @@ async function predictDisease() {
 async function predictRisk() {
 
   const crop = document.getElementById("crop").value;
+
   const temperature = document.getElementById("temp").value;
   const humidity = document.getElementById("humidity").value;
   const rainfall = document.getElementById("rainfall").value;
+
+  if (!temperature || !humidity || !rainfall) {
+    alert("Please provide weather data");
+    return;
+  }
+
+  document.getElementById("riskResult").innerHTML = "<p>Loading...</p>";
 
   const formData = new FormData();
   formData.append("crop", crop);
@@ -93,57 +154,34 @@ async function predictRisk() {
   formData.append("rainfall", rainfall);
 
   try {
-
     const response = await fetch(`${API}/predict_risk/`, {
       method: "POST",
       body: formData
     });
 
     const data = await response.json();
-    console.log(data);
 
     if (data.error) {
-      document.getElementById("riskResult").innerHTML = `
-        <div class="result-card high">
-          <h2>Error</h2>
-          <p>${data.error}</p>
-        </div>
-      `;
+      document.getElementById("riskResult").innerHTML =
+        `<div class="result-card high">${data.error}</div>`;
       return;
     }
 
     document.getElementById("riskResult").innerHTML = `
-  <div class="result-card">
-    <div class="progress-container">
-      <svg width="150" height="150">
-        <circle cx="75" cy="75" r="60" stroke="#eee" stroke-width="12" fill="none"/>
-        <circle id="progressCircle"
-          cx="75" cy="75" r="60"
-          stroke="${data.risk_percentage > 60 ? "#ff4d4d" : "#28a745"}"
-          stroke-width="12"
-          fill="none"
-          stroke-dasharray="377"
-          stroke-dashoffset="377"
-          transform="rotate(-90 75 75)"
-        />
-      </svg>
-      <div class="progress-text">${data.risk_percentage}%</div>
-    </div>
+      <div class="result-card ${data.risk_percentage > 60 ? "high" : "low"}">
+        <h2>${data.predicted_disease}</h2>
+        <p>${data.message}</p>
+      </div>
+    `;
 
-    <div>
-      <h2>${data.predicted_disease}</h2>
-      <p>${data.message}</p>
-    </div>
-  </div>
-`;
+    saveToHistory("Risk", data);
 
-animateCircle(data.risk_percentage);
-saveToHistory("Risk", data);
-   
-  } catch (error) {
+  } catch {
     alert("Server Error");
   }
 }
+
+
 
 
 function animateCircle(percent) {
