@@ -146,3 +146,10 @@ def predict_risk(
 @app.get("/supported_crops/")
 def supported_crops():
     return {"crops": crop_encoder.classes_.tolist()}
+
+
+@app.get("/get_crops")
+def get_crops():
+    return {
+        "crops": crop_encoder.classes_.tolist()
+    }
