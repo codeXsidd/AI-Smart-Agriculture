@@ -143,9 +143,9 @@ def predict_risk(
 
 
 # =========================
-# GET RISK MODEL CROPS
+# GET CROPS FOR RISK MODEL
 # =========================
-@app.get("/risk_crops/")
+@app.get("/get_risk_crops")
 def get_risk_crops():
     return {
         "crops": crop_encoder.classes_.tolist()
@@ -153,24 +153,13 @@ def get_risk_crops():
 
 
 # =========================
-# GET DISEASE MODEL CROPS
+# GET CROPS FOR DISEASE MODEL
 # =========================
-@app.get("/disease_crops/")
+@app.get("/get_disease_crops")
 def get_disease_crops():
-
-    disease_names = list(cure_dict.keys())
-
-    crop_set = set()
-
-    for disease in disease_names:
-        if "___" in disease:
-            crop_name = disease.split("___")[0]
-            crop_set.add(crop_name)
-
     return {
-        "crops": sorted(list(crop_set))
+        "crops": list(cure_dict.keys())
     }
-    
 def get_crops():
     return {
         "crops": crop_encoder.classes_.tolist()
