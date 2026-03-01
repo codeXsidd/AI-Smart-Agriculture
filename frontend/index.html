@@ -20,7 +20,7 @@
 
   <div class="card">
 
-    <!-- Upload Section -->
+    <!-- Image Upload -->
     <label>Upload Leaf Image</label>
     <div class="upload-box">
       <input 
@@ -29,7 +29,7 @@
         accept="image/*" 
         onchange="previewImage(event)"
       >
-
+      
       <div class="preview-container">
         <img 
           id="imagePreview" 
@@ -41,31 +41,26 @@
 
     <br>
 
-    <!-- Crop Dropdown -->
+    <!-- Dynamic Crop Dropdown (Loaded from /disease_crops/) -->
     <label>Select Crop</label>
-    <select id="afterCrop">
+    <select id="crop">
       <option>Loading crops...</option>
     </select>
 
     <br><br>
 
-    <!-- Analyze Button -->
     <button onclick="predictDisease()">
       Analyze Plant Health
     </button>
 
     <br><br>
 
-    <!-- Result -->
     <div id="diseaseResult"></div>
 
   </div>
 </div>
 
 <script src="script.js"></script>
-<script>
-  loadAfterCrops();   // Load crop list from backend
-</script>
 
 </body>
 </html>
