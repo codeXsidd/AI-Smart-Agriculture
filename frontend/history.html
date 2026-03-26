@@ -1,37 +1,68 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>AgriVision - History</title>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AgriVision AI – View your prediction history for disease diagnoses and risk assessments.">
+  <title>AgriVision – Prediction History</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="sidebar">
-  <div class="logo">🌿 AgriVision</div>
-  <a href="index.html" class="nav-item">After Infection</a>
-  <a href="before.html" class="nav-item">Before Infection</a>
-  <a href="history.html" class="nav-item active">History</a>
-</div>
+<!-- Sidebar -->
+<nav class="sidebar" id="sidebar">
+  <div class="logo">
+    <span class="logo-icon">🌿</span>
+    <span class="logo-text">AgriVision</span>
+  </div>
+  <div class="nav-group">
+    <a href="index.html" class="nav-item" id="nav-after">
+      <span class="nav-icon">🔬</span>
+      <span>Disease Diagnosis</span>
+    </a>
+    <a href="before.html" class="nav-item" id="nav-before">
+      <span class="nav-icon">📊</span>
+      <span>Risk Prediction</span>
+    </a>
+    <a href="history.html" class="nav-item active" id="nav-history">
+      <span class="nav-icon">📋</span>
+      <span>History</span>
+    </a>
+  </div>
+  <div class="sidebar-footer">
+    <span class="badge-ai">⚡ AI-Powered</span>
+  </div>
+</nav>
 
-<div class="main">
-  <h1>Prediction History</h1>
+<!-- Mobile Header -->
+<div class="mobile-header">
+  <button class="hamburger" onclick="toggleSidebar()" id="hamburgerBtn" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="logo logo-mobile">🌿 AgriVision</div>
+</div>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- Main Content -->
+<main class="main">
+  <div class="page-header">
+    <h1>Prediction History</h1>
+    <p class="page-subtitle">Review your past disease diagnoses and risk assessments</p>
+  </div>
 
   <div class="card">
-
-    <button onclick="clearHistory()" style="margin-bottom:15px;">
-      Clear History
-    </button>
-
-    <div id="historyContainer">
-      <p>Loading history...</p>
+    <div class="history-toolbar">
+      <span id="historyCount" class="history-count">Loading...</span>
+      <button class="btn-danger" onclick="clearHistory()">🗑️ Clear All</button>
     </div>
-
+    <div id="historyContainer"></div>
   </div>
-</div>
+</main>
 
+<script src="disease_data.js"></script>
+<script src="risk_model.js"></script>
 <script src="script.js"></script>
-
 </body>
 </html>
