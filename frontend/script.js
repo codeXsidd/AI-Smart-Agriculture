@@ -1,4 +1,4 @@
-const API = "https://ai-smart-agriculture.onrender.com";
+const API = "http://127.0.0.1:8000";
 
 /* =================================================
    AUTO DETECT PAGE & LOAD CORRECT CROPS
