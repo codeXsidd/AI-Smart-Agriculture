@@ -1,66 +1,111 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>AgriVision - After Infection</title>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AgriVision AI – Upload a leaf image to instantly diagnose plant diseases with AI-powered accuracy.">
+  <title>AgriVision – Disease Diagnosis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <!-- TensorFlow.js + TFLite Task Library (WASM) -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/tasks@0.0.1-alpha.8/dist/tasks.min.js"></script>
 </head>
 <body>
 
-<div class="sidebar">
-  <div class="logo">🌿 AgriVision</div>
-  <a href="index.html" class="nav-item active">After Infection</a>
-  <a href="before.html" class="nav-item">Before Infection</a>
-  <a href="history.html" class="nav-item">History</a>
-</div>
+<!-- Sidebar -->
+<nav class="sidebar" id="sidebar">
+  <div class="logo">
+    <span class="logo-icon">🌿</span>
+    <span class="logo-text">AgriVision</span>
+  </div>
+  <div class="nav-group">
+    <a href="index.html" class="nav-item active" id="nav-after">
+      <span class="nav-icon">🔬</span>
+      <span>Disease Diagnosis</span>
+    </a>
+    <a href="before.html" class="nav-item" id="nav-before">
+      <span class="nav-icon">📊</span>
+      <span>Risk Prediction</span>
+    </a>
+    <a href="history.html" class="nav-item" id="nav-history">
+      <span class="nav-icon">📋</span>
+      <span>History</span>
+    </a>
+  </div>
+  <div class="sidebar-footer">
+    <span class="badge-ai">⚡ AI-Powered</span>
+  </div>
+</nav>
 
-<div class="main">
-  <h1>Disease Diagnosis</h1>
+<!-- Mobile Header -->
+<div class="mobile-header">
+  <button class="hamburger" onclick="toggleSidebar()" id="hamburgerBtn" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="logo logo-mobile">🌿 AgriVision</div>
+</div>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- Main Content -->
+<main class="main">
+  <div class="page-header">
+    <h1>Disease Diagnosis</h1>
+    <p class="page-subtitle">Upload a leaf image to instantly detect plant disease with AI</p>
+  </div>
 
   <div class="card">
+    <!-- Status Banner -->
+    <div class="model-status" id="modelStatus">
+      <div class="status-dot loading"></div>
+      <span id="statusText">Loading AI model...</span>
+    </div>
 
-    <!-- Image Upload -->
-    <label>Upload Leaf Image</label>
-    <div class="upload-box">
-      <input 
-        type="file" 
-        id="imageInput" 
-        accept="image/*" 
-        onchange="previewImage(event)"
-      >
-      
-      <div class="preview-container">
-        <img 
-          id="imagePreview" 
-          alt="Leaf Preview"
-          style="display:none; max-width:200px; margin-top:10px;"
-        >
+    <!-- Upload Zone -->
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" id="imageInput" accept="image/*" onchange="handleImageSelect(event)">
+      <div class="upload-content" id="uploadContent">
+        <div class="upload-icon">🖼️</div>
+        <p class="upload-title">Drop your leaf image here</p>
+        <p class="upload-subtitle">or click to browse · PNG, JPG, WEBP up to 10MB</p>
+      </div>
+      <div class="preview-container" id="previewContainer" style="display:none;">
+        <img id="imagePreview" alt="Leaf Preview">
+        <button class="remove-btn" onclick="removeImage(event)">✕ Remove</button>
       </div>
     </div>
 
-    <br>
+    <!-- Crop Info (optional) -->
+    <div class="input-group">
+      <label for="cropNote">Crop Type (Optional — for your records)</label>
+      <select id="cropNote">
+        <option value="">Select crop (optional)</option>
+        <option>Apple</option><option>Blueberry</option><option>Cherry</option>
+        <option>Corn / Maize</option><option>Grape</option><option>Orange</option>
+        <option>Peach</option><option>Pepper</option><option>Potato</option>
+        <option>Raspberry</option><option>Soybean</option><option>Squash</option>
+        <option>Strawberry</option><option>Tomato</option>
+      </select>
+    </div>
 
-    <!-- Dynamic Crop Dropdown (Loaded from /disease_crops/) -->
-    <label>Select Crop</label>
-    <select id="crop">
-      <option>Loading crops...</option>
-    </select>
-
-    <br><br>
-
-    <button onclick="predictDisease()">
-      Analyze Plant Health
+    <button class="btn-primary" id="analyzeBtn" onclick="predictDisease()">
+      <span class="btn-icon">🔬</span> Analyze Plant Health
     </button>
 
-    <br><br>
+    <!-- Loading Spinner -->
+    <div class="spinner-container" id="spinnerContainer" style="display:none;">
+      <div class="spinner"></div>
+      <p>Running AI analysis...</p>
+    </div>
 
+    <!-- Result -->
     <div id="diseaseResult"></div>
-
   </div>
-</div>
+</main>
 
+<script src="disease_data.js"></script>
+<script src="risk_model.js"></script>
 <script src="script.js"></script>
-
 </body>
 </html>

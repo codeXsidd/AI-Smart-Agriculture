@@ -1,98 +1,141 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>AgriVision - Before Infection</title>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AgriVision AI – Predict crop disease risk using weather conditions before infection occurs.">
+  <title>AgriVision – Risk Prediction</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="sidebar">
-  <div class="logo">🌿 AgriVision</div>
-  <a href="index.html" class="nav-item">After Infection</a>
-  <a href="before.html" class="nav-item active">Before Infection</a>
-  <a href="history.html" class="nav-item">History</a>
-</div>
+<!-- Sidebar -->
+<nav class="sidebar" id="sidebar">
+  <div class="logo">
+    <span class="logo-icon">🌿</span>
+    <span class="logo-text">AgriVision</span>
+  </div>
+  <div class="nav-group">
+    <a href="index.html" class="nav-item" id="nav-after">
+      <span class="nav-icon">🔬</span>
+      <span>Disease Diagnosis</span>
+    </a>
+    <a href="before.html" class="nav-item active" id="nav-before">
+      <span class="nav-icon">📊</span>
+      <span>Risk Prediction</span>
+    </a>
+    <a href="history.html" class="nav-item" id="nav-history">
+      <span class="nav-icon">📋</span>
+      <span>History</span>
+    </a>
+  </div>
+  <div class="sidebar-footer">
+    <span class="badge-ai">⚡ AI-Powered</span>
+  </div>
+</nav>
 
-<div class="main">
-  <h1>Early Risk Prediction</h1>
+<!-- Mobile Header -->
+<div class="mobile-header">
+  <button class="hamburger" onclick="toggleSidebar()" id="hamburgerBtn" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="logo logo-mobile">🌿 AgriVision</div>
+</div>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- Main Content -->
+<main class="main">
+  <div class="page-header">
+    <h1>Early Risk Prediction</h1>
+    <p class="page-subtitle">Predict disease risk before it strikes using weather and crop data</p>
+  </div>
 
   <div class="card">
-
-    <!-- Dynamic Crop Dropdown (Loaded from /risk_crops/) -->
-    <label>Select Crop</label>
-    <select id="crop">
-      <option>Loading crops...</option>
-    </select>
-
-    <br><br>
+    <!-- Crop Selector -->
+    <div class="input-group">
+      <label for="crop">Select Your Crop</label>
+      <select id="crop">
+        <option value="">-- Choose a crop --</option>
+      </select>
+    </div>
 
     <!-- Mode Toggle -->
     <div class="mode-toggle">
-      <button 
-        onclick="setManualMode()" 
-        id="manualBtn" 
-        class="active-mode">
-        Manual
+      <button class="mode-btn active-mode" id="manualBtn" onclick="setManualMode()">
+        ✏️ Manual Input
       </button>
-
-      <button 
-        onclick="setAutoMode()" 
-        id="autoBtn">
-        Auto (Weather API)
+      <button class="mode-btn" id="autoBtn" onclick="setAutoMode()">
+        📍 Auto (Weather API)
       </button>
     </div>
 
-    <br>
-
-    <!-- MANUAL INPUTS -->
-    <div id="manualSection">
-      <input 
-        type="number" 
-        id="temp" 
-        placeholder="Temperature (°C)" 
-        step="0.1"
-      >
-      <input 
-        type="number" 
-        id="humidity" 
-        placeholder="Humidity (%)"
-        step="0.1"
-      >
-      <input 
-        type="number" 
-        id="rainfall" 
-        placeholder="Rainfall (mm)"
-        step="0.1"
-      >
+    <!-- Manual Inputs -->
+    <div id="manualSection" class="weather-section">
+      <div class="input-row">
+        <div class="input-group">
+          <label for="temp">🌡️ Temperature</label>
+          <input type="number" id="temp" placeholder="e.g. 28" step="0.1" min="-20" max="60">
+          <span class="input-unit">°C</span>
+        </div>
+        <div class="input-group">
+          <label for="humidity">💧 Humidity</label>
+          <input type="number" id="humidity" placeholder="e.g. 70" step="0.1" min="0" max="100">
+          <span class="input-unit">%</span>
+        </div>
+      </div>
+      <div class="input-group">
+        <label for="rainfall">🌧️ Rainfall</label>
+        <input type="number" id="rainfall" placeholder="e.g. 10" step="0.1" min="0" max="500">
+        <span class="input-unit">mm</span>
+      </div>
     </div>
 
-    <!-- AUTO WEATHER SECTION -->
-    <div id="autoSection" style="display:none;">
-      
-      <button onclick="getCurrentLocationWeather()">
-        Use My Current Location
+    <!-- Auto Weather Section -->
+    <div id="autoSection" style="display:none;" class="weather-section">
+      <button class="btn-secondary" onclick="getCurrentLocationWeather()">
+        📍 Use My Current Location
       </button>
-
-      <p id="weatherInfo" style="margin-top:10px;"></p>
-
+      <div class="weather-card" id="weatherCard" style="display:none;">
+        <div class="weather-item" id="weatherInfo"></div>
+        <div class="weather-grid">
+          <div class="weather-stat">
+            <span class="stat-label">Temperature</span>
+            <span class="stat-value" id="tempDisplay">--</span>
+          </div>
+          <div class="weather-stat">
+            <span class="stat-label">Humidity</span>
+            <span class="stat-value" id="humDisplay">--</span>
+          </div>
+          <div class="weather-stat">
+            <span class="stat-label">Rainfall</span>
+            <span class="stat-value" id="rainDisplay">--</span>
+          </div>
+        </div>
+        <input type="hidden" id="temp">
+        <input type="hidden" id="humidity">
+        <input type="hidden" id="rainfall">
+      </div>
     </div>
 
-    <br>
-
-    <button onclick="predictRisk()">
-      Forecast Risk
+    <button class="btn-primary" onclick="predictRisk()">
+      <span class="btn-icon">📊</span> Forecast Disease Risk
     </button>
 
-    <br><br>
+    <!-- Loading -->
+    <div class="spinner-container" id="riskSpinner" style="display:none;">
+      <div class="spinner"></div>
+      <p>Analyzing risk factors...</p>
+    </div>
 
+    <!-- Result -->
     <div id="riskResult"></div>
-
   </div>
-</div>
+</main>
 
+<script src="disease_data.js"></script>
+<script src="risk_model.js"></script>
 <script src="script.js"></script>
-
 </body>
 </html>
