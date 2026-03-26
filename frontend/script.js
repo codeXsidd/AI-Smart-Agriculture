@@ -28,7 +28,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
 // ─── MODEL LOADING ──────────────────────────────────
 async function initModel() {
-  const statusEl  = document.getElementById("modelStatus");
+  const statusEl   = document.getElementById("modelStatus");
   const statusText = document.getElementById("statusText");
   const statusDot  = statusEl?.querySelector(".status-dot");
   const analyzeBtn = document.getElementById("analyzeBtn");
@@ -38,26 +38,9 @@ async function initModel() {
   try {
     setStatus("loading", "Downloading AI model (~11 MB)...", statusDot, statusText);
 
-    // Fetch the TFLite model as an ArrayBuffer
-    const response = await fetch("model/smart_agri_model_quant.tflite");
-    if (!response.ok) throw new Error(`HTTP ${response.status}: Could not fetch model`);
-    const modelBuffer = await response.arrayBuffer();
-
-    setStatus("loading", "Initializing inference engine...", statusDot, statusText);
-
-    // Use the TFLite Task Library if available, otherwise fall back to raw WASM
-    if (typeof tfTask !== "undefined" && tfTask.ImageClassifier) {
-      // @tensorflow-models/tasks approach
-      tfliteModel = { type: "task", buffer: modelBuffer };
-    } else if (typeof tflite !== "undefined") {
-      // @tensorflow/tfjs-tflite approach
-      tfliteModel = await tflite.loadTFLiteModel(modelBuffer);
-      tfliteModel.type = "tflite";
-    } else {
-      // Pure TF.js: run via a canvas pixel extraction + manual typed array inference
-      // We'll use TF.js directly with the model buffer
-      tfliteModel = { type: "buffer", buffer: modelBuffer };
-    }
+    // tflite is exposed by @tensorflow/tfjs-tflite
+    // loadTFLiteModel accepts a URL and handles fetching + WASM init internally
+    tfliteModel = await tflite.loadTFLiteModel("model/smart_agri_model_quant.tflite");
 
     modelReady = true;
     setStatus("ready", "✅ AI model ready — upload a leaf image to begin", statusDot, statusText);
@@ -133,7 +116,6 @@ async function predictDisease() {
     showToast("Please upload a leaf image first.", "warning");
     return;
   }
-
   if (!modelReady) {
     showToast("AI model is still loading. Please wait a moment.", "warning");
     return;
@@ -143,9 +125,9 @@ async function predictDisease() {
   document.getElementById("diseaseResult").innerHTML = "";
 
   try {
-    const imgEl = document.getElementById("imagePreview");
+    const imgEl  = document.getElementById("imagePreview");
 
-    // Pre-process image for model (224x224, float32, normalized to [0,1])
+    // ---- Preprocess: resize to 224×224, normalize to [0, 1] ----
     const canvas = document.createElement("canvas");
     canvas.width = 224;
     canvas.height = 224;
@@ -153,55 +135,40 @@ async function predictDisease() {
     ctx.drawImage(imgEl, 0, 0, 224, 224);
     const imageData = ctx.getImageData(0, 0, 224, 224);
 
-    let confidenceArr;
-
-    if (tfliteModel.type === "tflite") {
-      // --- TFLite Task Library path ---
-      const inputArray = new Float32Array(224 * 224 * 3);
-      for (let i = 0, j = 0; i < imageData.data.length; i += 4, j += 3) {
-        inputArray[j]     = imageData.data[i]     / 255.0;
-        inputArray[j + 1] = imageData.data[i + 1] / 255.0;
-        inputArray[j + 2] = imageData.data[i + 2] / 255.0;
-      }
-      const inputTensor = tf.tensor4d(inputArray, [1, 224, 224, 3]);
-      const outputTensor = tfliteModel.predict(inputTensor);
-      confidenceArr = await outputTensor.data();
-      inputTensor.dispose();
-      outputTensor.dispose();
-    } else {
-      // --- Pure TF.js fallback using canvas pixel data ---
-      const inputTensor = tf.tidy(() => {
-        const pixels = tf.browser.fromPixels(canvas);
-        const resized = tf.image.resizeBilinear(pixels, [224, 224]);
-        const normalized = resized.div(255.0);
-        return normalized.expandDims(0);
-      });
-
-      // Since we can't run TFLite natively without the library,
-      // we use a rule-based heuristic from image dominant color analysis
-      // Combined with a pre-computed probability distribution
-      const pixelData = await inputTensor.data();
-      inputTensor.dispose();
-
-      // Analyze dominant color channels to estimate disease likelihood
-      confidenceArr = analyzeImageFeatures(imageData, pixelData);
+    const inputArray = new Float32Array(224 * 224 * 3);
+    for (let i = 0, j = 0; i < imageData.data.length; i += 4, j += 3) {
+      inputArray[j]     = imageData.data[i]     / 255.0;   // R
+      inputArray[j + 1] = imageData.data[i + 1] / 255.0;   // G
+      inputArray[j + 2] = imageData.data[i + 2] / 255.0;   // B
     }
 
-    // Get top prediction
+    // ---- Run the real TFLite model ----
+    const inputTensor  = tf.tensor4d(inputArray, [1, 224, 224, 3]);
+    const outputTensor = tfliteModel.predict(inputTensor);
+    const probs        = await outputTensor.data();          // Float32Array[65]
+    inputTensor.dispose();
+    outputTensor.dispose();
+
+    // ---- Find top-1 prediction ----
     let maxVal = -Infinity, maxIdx = 0;
-    for (let i = 0; i < confidenceArr.length; i++) {
-      if (confidenceArr[i] > maxVal) { maxVal = confidenceArr[i]; maxIdx = i; }
+    for (let i = 0; i < probs.length; i++) {
+      if (probs[i] > maxVal) { maxVal = probs[i]; maxIdx = i; }
     }
 
-    const confidence = Math.round(maxVal * 100);
-    const rawLabel = DISEASE_LABELS[maxIdx % DISEASE_LABELS.length] || "Unknown Disease";
-    const cure = getCure(rawLabel);
-    const healthy = isHealthy(rawLabel);
+    const confidence  = Math.round(maxVal * 100);
+    const rawLabel    = DISEASE_LABELS[maxIdx % DISEASE_LABELS.length] || "Unknown Disease";
+    const cure        = getCure(rawLabel);
+    const healthy     = isHealthy(rawLabel);
     const displayName = formatDiseaseName(rawLabel);
 
     hideSpinner("spinnerContainer");
     renderDiseaseResult(displayName, confidence, cure, healthy);
-    saveToHistory("Disease Diagnosis", { disease: displayName, confidence_percentage: confidence, organic_cure: cure.organic, chemical_cure: cure.chemical });
+    saveToHistory("Disease Diagnosis", {
+      disease: displayName,
+      confidence_percentage: confidence,
+      organic_cure: cure.organic,
+      chemical_cure: cure.chemical
+    });
 
   } catch (err) {
     hideSpinner("spinnerContainer");
@@ -211,53 +178,11 @@ async function predictDisease() {
         <div class="result-header">
           <div class="result-body">
             <h2>⚠️ Analysis Error</h2>
-            <p>${err.message || "Failed to process image. Please try a different image."}</p>
+            <p>${err.message || "Failed to process image. Try a clearer leaf photo."}</p>
           </div>
         </div>
       </div>`;
   }
-}
-
-// Heuristic image analysis when TFLite runtime not available
-function analyzeImageFeatures(imageData, pixelData) {
-  const data = imageData.data;
-  let r = 0, g = 0, b = 0, brown = 0, yellow = 0, dark = 0;
-  const pixels = data.length / 4;
-
-  for (let i = 0; i < data.length; i += 4) {
-    const rv = data[i], gv = data[i+1], bv = data[i+2];
-    r += rv; g += gv; b += bv;
-    if (rv > 120 && gv < 80 && bv < 80) brown++;
-    if (rv > 180 && gv > 160 && bv < 80) yellow++;
-    if (rv < 60 && gv < 60 && bv < 60) dark++;
-  }
-
-  r /= pixels; g /= pixels; b /= pixels;
-  const brownRatio  = brown / pixels;
-  const yellowRatio = yellow / pixels;
-  const darkRatio   = dark / pixels;
-  const greenRatio  = g / (r + g + b + 1);
-  
-  // Build probability distribution across 65 classes
-  const probs = new Float32Array(65).fill(0.005);
-
-  if (greenRatio > 0.45 && brownRatio < 0.05) {
-    // Healthy-looking leaf
-    [3,6,10,14,17,19,22,23,24,27,37].forEach(i => { probs[i] = 0.08; });
-  } else if (brownRatio > 0.15) {
-    // Brown spots -> blight/rot
-    [0,1,11,20,21,28,29,30,34].forEach(i => { probs[i] = 0.07; });
-  } else if (yellowRatio > 0.12) {
-    // Yellow -> rust, virus, mildew
-    [2,7,8,25,35,36].forEach(i => { probs[i] = 0.09; });
-  } else {
-    // General fungal disease
-    [32,33,31,26].forEach(i => { probs[i] = 0.08; });
-  }
-
-  // Normalize
-  const sum = probs.reduce((a,b) => a + b, 0);
-  return probs.map(p => p / sum);
 }
 
 function renderDiseaseResult(displayName, confidence, cure, healthy) {
